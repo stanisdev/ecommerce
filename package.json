@@ -1,0 +1,33 @@
+{
+  "name": "ecommerce",
+  "version": "1.0.0",
+  "description": "Demo app online clothes shop",
+  "main": "app.js",
+  "scripts": {
+    "start": "nodemon --harmony-proxies app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stanisdev/ecommerce.git"
+  },
+  "keywords": [
+    "nodejs",
+    "mongoDB",
+    "javascript",
+    "online",
+    "shop",
+    "ecommerce"
+  ],
+  "author": "Stanislav Zavalishin",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/stanisdev/ecommerce/issues"
+  },
+  "homepage": "https://github.com/stanisdev/ecommerce#readme",
+  "dependencies": {
+    "co-express": "^1.2.1",
+    "express": "^4.13.4",
+    "harmony-proxy": "^1.0.1",
+    "mongoose": "^4.4.16"
+  }
+}
