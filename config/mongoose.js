@@ -8,18 +8,26 @@ module.exports = (config, init) => {
    db.on('error', console.error.bind(console, 'connection error:'));
    db.once('open', function() {
 
-      // Determine method to include and retun model from file
+      // To store once required models
+      mongoose._modeles = {};
+
+      // Determine method to get model
       function getModel(name) {
          const fs = require('fs');
          const path = `${config.root_dir}/app/models/` + name.toLowerCase() + '.js';
 
+         if (mongoose._modeles.hasOwnProperty(name)) {
+            return Promise.resolve(mongoose._modeles[name]);
+         }
+
+         // Include model once
          return new Promise((res, rej) => {
             fs.access(path, fs.R_OK, (err) => {
               if (err) {
                  rej(false);
                  return console.error(err);
               }
-              res(require(path)(mongoose));
+              res(mongoose._modeles[name] = require(path)(mongoose));
             });
          });
       }
