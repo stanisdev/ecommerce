@@ -11,6 +11,7 @@ require(__dirname + '/config/mongoose')(config, init);
 function init(mongoose) {
    require(__dirname + '/config/middlewares/menu-navigation')(app, co, mongoose);
    require(__dirname + '/app/controllers/main')(app, co, mongoose);
+   require(__dirname + '/app/controllers/category')(app, co, mongoose);
 }
 
 // Listen

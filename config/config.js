@@ -4,7 +4,7 @@ const path = require('path');
 
 const config = {
    express: {
-      port: 5000
+      port: 5001
    },
    mongo: {
       host: 'localhost',

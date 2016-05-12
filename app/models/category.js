@@ -17,6 +17,16 @@ module.exports = (mongoose) => {
       subcategory: [{
          title: {type: String, required: true},
          url: {type: String, required: true, unique: true},
+         goods: [{
+            title: {type: String, required: true},
+            price: {type: Number, required: true},
+            discount: {type: Number, default: 0},
+            isSold: {type: Boolean, default: true},
+            brands: [String],
+            pictures: [String],
+            description: String,
+            tags: [String]
+         }],
          enabled: {type: Boolean, default: true}
       }],
       enabled: {
@@ -24,6 +34,17 @@ module.exports = (mongoose) => {
          default: true
       }
    });
+
+   // Static methods
+   categorySchema.statics = {
+
+      // List goods
+      list(category) {
+         return this
+            .find({url: category, enabled: true})
+            .exec();
+      }
+   };
 
    return mongoose.model('Category', categorySchema);
 };
