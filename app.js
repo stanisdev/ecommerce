@@ -9,7 +9,7 @@ require(__dirname + '/config/mongoose')(config, init);
 
 // Include controllers and middlewares
 function init(mongoose) {
-   require(__dirname + '/config/middlewares/menu-navigation')(app, co, mongoose);
+   require(__dirname + '/config/middlewares/primary')(app, co, mongoose);
    require(__dirname + '/app/controllers/main')(app, co, mongoose);
    require(__dirname + '/app/controllers/category')(app, co, mongoose);
 }

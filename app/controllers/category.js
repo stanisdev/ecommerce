@@ -2,10 +2,10 @@
 
 module.exports = (app, co, mongoose) => {
 
-   var router = (require('express')).Router();
+   const router = (require('express')).Router();
 
    // Regexp urls
-   var urls = {
+   const urls = {
       category: /^\/(page\/(\d+))?$/,
       subcategory: /^\/subcat\/([a-zA-Z\d_]+)(\/page\/(\d+))?$/,
       goods: /^\/subcat\/([a-zA-Z\d_]+)\/item\/([abcdef\d]{24})$/
@@ -27,14 +27,23 @@ module.exports = (app, co, mongoose) => {
     * Category page rendering everething goods with pagination
     */
    router.get(urls.category, co(function* (req, res) {
-      const category = res.categoryName;
+      const _ = require('lodash');
+      const name = res.categoryName;
 
       // Then there is pagination action
       if (req.params[1]) {
-         const page = req.params[1];
+         const page = req.params[1]
       }
-      const list = yield mongoose.Category.list(category);
-      res.render('category/face');
+
+      const category = yield mongoose.Category.findCategoryByUrl(name);
+      if (!category || !_.isObject(category) || Object.keys(category).length < 1) {
+         return res.render('main/404');
+      }
+
+      const goods = yield mongoose.Goods.findGoodsByCategoryId(category._id);
+      console.log(goods);
+
+      res.render('category/allGoods');
    }));
 
 
