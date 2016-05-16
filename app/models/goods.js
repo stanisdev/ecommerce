@@ -45,6 +45,17 @@ module.exports = (mongoose) => {
             .find({_category: categoryId, enabled: true})
             .select('title price isSold discount')
             .exec();
+      },
+
+      /**
+       * Find goods by its id
+       */
+      findOneGoodsById(goodsId, selectOptions) {
+         var id = new mongoose.Types.ObjectId(goodsId);
+         return this
+            .findOne({_id: goodsId, enabled: true})
+            .select(selectOptions)
+            .exec();
       }
    }
 

@@ -42,85 +42,51 @@ module.exports = (mongoose) => {
             .exec();
       },
 
-      getSubcategoryInfoByGoodsId(goodsId) {
-         db.categories.aggregate([
-             { $match : { _id : ObjectId("57382c71164178865d9dc374") } },
-             {
-                 $group : {
-                    _id : '$title',
-                    subcat: {$push: {item: '$subcategory'}}
-                 }
-             },
-             { $unwind : "$subcat" },
-             { $unwind : "$subcat.item" },
-             { $match : { 'subcat.item.goods' : ObjectId("57382c71164178865d9dc377"), 'subcat.item.enabled': true } },
-             {
-                 $group : {
-                    _id : {catTitle: '$_id', subcatTitle: '$subcat.item.title', subcatUrl: '$subcat.item.url'}
-                 }
-             }
-         ]);
-      }
-
       /**
-       * Get data for menu navigation
+       * Find and get category and appropriate subcategory title with url
        */
-      menuNavigation(cb) {
-         var mr = {
-            map: function() {
-               if (this.enabled)
-                  emit({url: this.url, title: this.title}, {subcategory: this.subcategory});
+      findSubcategoryByGoodsId(categoryId, goodsId) {
+         /**
+          * Of course, we can use additional external key "_subcategory = category.subcategoryID"
+          * inside "Goods" collection and the query would be less and retrieving data would be faster.
+          * But in this case we pursue likely demonstration purposes :-)
+          */
+         return this.aggregate([
+            { $match : { _id : categoryId, enabled: true } },
+            { $unwind: "$subcategory" },
+            { $match: {
+                  "subcategory.goods": goodsId,
+                  "subcategory.enabled": true
+               }
             },
-            finalize: function (key, redValue) {
-               var subcats = redValue.subcategory
-                  .map(function(e) {
-                     return {url: e.url, title: e.title, enabled: e.enabled};
-                  })
-                  .filter(function(e) {
-                     return e.enabled;
-                  });
-               return {url: key.url, title: key.title, subcategory: subcats};
-            },
-            reduce: function () {}
-         };
-         this.mapReduce(mr, function (err, result) {
-            if (err) return console.error(err);
-            cb(result.map(e => e.value));
-        });
+            { $project : {
+                  title : 1,
+                  url: 1,
+                  'subcategory.title': 1,
+                  'subcategory.url': 1
+               }
+            }
+         ]).exec();
       },
 
       /**
-       * Update goods by ObjectId
+       * Get categories and subcategories for menu navigation
        */
-      updateGoods() {
-
-         // Update by index array of goods
-         db.categories.update(
-            {
-               url: 'mens',
-               'subcategory.url': 'pants',
-               'subcategory.goods._id': ObjectId("573590a2fe2a71ea0e2123ad")
-            },
-            {$set : {"subcategory.$.goods.1.price": 82}}
-         );
-
-         // Retrieve index of element's array
-         var map = function() {
-            if (this.enabled && this.url == 'mens') emit({}, {subcategory: this.subcategory});
-         };
-         var reduce = function() {};
-         var finalize = function(key, doc) {
-            var res = doc.subcategory.filter(function(e) {return e.url === 'pants';})[0].goods;
-            var key = res.reduce(function(prev, curr, currIndex) {
-               if (curr._id == '573590a2fe2a71ea0e2123ad') {
-                  prev = currIndex;
+      getAllCategoriesAndSubcats() {
+         return this.aggregate([
+            { $match : { enabled : true } },
+            { $unwind : '$subcategory' },
+            { $match : { 'subcategory.enabled' : true } },
+            { $group: {
+                  _id: { catTitle: '$title', catUrl: '$url' },
+                  subcat: {
+                     $push: {url: '$subcategory.url', title: '$subcategory.title'}
+                  }
                }
-               return prev;
-            }, -1);
-            return {result: key};
-         };
-         db.categories.mapReduce(map, reduce, {finalize: finalize, out: {inline: 1}})
-      }
+            },
+            { $sort : { '_id.catUrl' : 1 } }
+         ]).exec();
+      },
    };
 
    return mongoose.model('Category', categorySchema);

@@ -13,10 +13,13 @@
 </div>
 <!--//banner-->
 
-
 <!-- Content -->
 <div class="product">
 			<div class="container">
+				<% if (goods.length < 1) { %>
+					<p>There are no some goods in this category</p>
+				<% } else { %>
+
 			<div class="col-md-9">
 			<div class="mid-popular">
 					<div class="col-md-4 item-grid1 simpleCart_shelfItem">
@@ -427,7 +430,10 @@
 							</div>
 				   </section>
 		</div>
+		<% } %>
 	</div>
 </div>
+
+
 
 <br><br>

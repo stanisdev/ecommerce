@@ -2,24 +2,18 @@
 
 module.exports = (app, co, mongoose) => {
 
+   /**
+    * Initial preparations
+    */
    const router = (require('express')).Router();
-
-   // Regexp urls
    const urls = {
       category: /^\/(page\/(\d+))?$/,
-      subcategory: /^\/subcat\/([a-zA-Z\d_]+)(\/page\/(\d+))?$/,
-      goods: /^\/subcat\/([a-zA-Z\d_]+)\/item\/([abcdef\d]{24})$/
+      subcategory: /^\/subcat\/([a-zA-Z\d_]+)(\/page\/(\d+))?$/
    };
-
-   // Get category name
    app.param('categoryName', (req, res, next, categoryName) => {
-      if (categoryName) {
-         res['categoryName'] = categoryName;
-      }
+      if (categoryName) res['categoryName'] = categoryName;
       next();
    });
-
-   // Use router
    app.use('/category/:categoryName', router);
 
 
@@ -30,20 +24,22 @@ module.exports = (app, co, mongoose) => {
       const _ = require('lodash');
       const name = res.categoryName;
 
-      // Then there is pagination action
-      if (req.params[1]) {
+      if (req.params[1]) { // If there is pagination action
          const page = req.params[1]
       }
 
+      // Get category info
       const category = yield mongoose.Category.findCategoryByUrl(name);
       if (!category || !_.isObject(category) || Object.keys(category).length < 1) {
          return res.render('main/404');
       }
 
+      // Get goods list
       const goods = yield mongoose.Goods.findGoodsByCategoryId(category._id);
-      console.log(goods);
-
-      res.render('category/allGoods');
+      res.render('category/allGoods', {
+         goods: goods,
+         category: category
+      });
    }));
 
 
@@ -59,17 +55,6 @@ module.exports = (app, co, mongoose) => {
       }
       res.send('Subcat');
    }));
-
-
-   /**
-    * Goods overview
-    */
-   router.get(urls.goods, co(function* (req, res) {
-      const subcat = req.params[0];
-      const item = req.params[1];
-
-      res.send('goods');
-   }));
 };
 
 
@@ -79,5 +64,4 @@ Type of URL
 /category/mens/page:2
 /category/mens/subcat/shirts
 /category/mens/subcat/shirts/page/2
-/category/mens/subcat/shirts/item/57345e7fadda261b1a8ef93a
 **/

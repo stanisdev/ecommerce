@@ -12,6 +12,7 @@ function init(mongoose) {
    require(__dirname + '/config/middlewares/primary')(app, co, mongoose);
    require(__dirname + '/app/controllers/main')(app, co, mongoose);
    require(__dirname + '/app/controllers/category')(app, co, mongoose);
+   require(__dirname + '/app/controllers/goods')(app, co, mongoose);
 }
 
 // Listen
