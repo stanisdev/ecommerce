@@ -71,10 +71,46 @@ module.exports = (app, co, mongoose) => {
       yield menPants2.save();
 
 
+      // Pants 3
+      const menPants3 = new Goods({
+         title: 'Skinny Fit Tweed Trousers',
+         price: 35.00,
+         brand: [],
+         description: 'Make trousers the talking point of your outfit. Slim fits continue to be a style staple, while timeless tweed and classic cords make a comeback.',
+         tags: ['trousers'],
+         _category: men
+      });
+      yield menPants3.save();
+
+
+      // Pants 4
+      const menPants4 = new Goods({
+         title: 'Regular Fit Jogger',
+         price: 16.00,
+         brand: ['Vely'],
+         description: 'Look to joggers in soft touch jersey fabrics and slouchy drop crotch styles as your loungewear staples.',
+         tags: [],
+         _category: men
+      });
+      yield menPants4.save();
+
+
+      // Pants 5
+      const menPants5 = new Goods({
+         title: 'Drop Crotch PU Panel Joggers',
+         price: 26.00,
+         brand: [],
+         description: 'For a more fashion-forward fix, we’ve edged up your essentials with PU trims',
+         tags: [],
+         _category: men
+      });
+      yield menPants5.save();
+
+
       // Save jackets in subcategory
       men.subcategory[0].goods.push(menJacket);
       // Save pants in subcategory
-      men.subcategory[1].goods.push(menPants1, menPants2);
+      men.subcategory[1].goods.push(menPants1, menPants2, menPants3, menPants4, menPants5);
       yield men.save();
 
 

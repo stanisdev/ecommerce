@@ -4,7 +4,7 @@
   "description": "Demo app online clothes shop",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon --harmony-proxies app.js"
+    "start": "nodemon app.js"
   },
   "repository": {
     "type": "git",

@@ -1,9 +1,7 @@
-'use strict';
-
 module.exports = (mongoose) => {
 
    // Schema
-   var goodsSchema = mongoose.Schema({
+   const goodsSchema = mongoose.Schema({
       title: {
          type: String,
          required: true
@@ -28,10 +26,18 @@ module.exports = (mongoose) => {
          type: mongoose.Schema.ObjectId,
          ref: 'Category'
       },
+      _subcategory: {
+         type: mongoose.Schema.ObjectId,
+         ref: 'Category.subcategory'
+      },
       brands: [String],
       pictures: [String],
       description: String,
-      tags: [String]
+      tags: [String],
+      createdAt: {
+         type : Date,
+         default : Date.now
+      }
    });
 
    // Static methods
@@ -40,21 +46,35 @@ module.exports = (mongoose) => {
       /**
        * Find list of goods by categoryId
        */
-      findGoodsByCategoryId(categoryId, page) {
-         return this
+      findGoodsByCategoryId(categoryId, page, options) {
+         const query = this
             .find({_category: categoryId, enabled: true})
             .select('title price isSold discount')
-            .exec();
+            .skip(page * 3)
+            .limit(3);
+
+         require('./../helpers/category').setOptionsParam(query, options);
+         return query.exec();;
       },
 
       /**
        * Find goods by its id
        */
       findOneGoodsById(goodsId, selectOptions) {
-         var id = new mongoose.Types.ObjectId(goodsId);
+         const id = new mongoose.Types.ObjectId(goodsId);
          return this
             .findOne({_id: goodsId, enabled: true})
             .select(selectOptions)
+            .exec();
+      },
+
+      /**
+       * Get overal count of goods belongs certan category
+       */
+      getCountOfGoodsByCategoryId(catId) {
+         const categoryId = new mongoose.Types.ObjectId(catId);
+         return this
+            .count({_category: categoryId, enabled: true})
             .exec();
       }
    }

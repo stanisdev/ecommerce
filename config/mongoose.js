@@ -24,7 +24,7 @@ module.exports = (config, init) => {
 
       // Attach this method
       const Proxy = require('harmony-proxy');
-      const trappedMongoose = Proxy(mongoose, {
+      const trappedMongoose = new Proxy(mongoose, {
          get: (mongoose, propName) => {
             return (
                propName in mongoose ? mongoose[propName] : getModel(propName)

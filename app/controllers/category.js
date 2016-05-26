@@ -7,7 +7,7 @@ module.exports = (app, co, mongoose) => {
     */
    const router = (require('express')).Router();
    const urls = {
-      category: /^\/(page\/(\d+))?$/,
+      category: /^\/(page\/(\d+))?(\/)?(options\/([a-z]+:\[(\d,?)+\],?)*)?$/,
       subcategory: /^\/subcat\/([a-zA-Z\d_]+)(\/page\/(\d+))?$/
    };
    app.param('categoryName', (req, res, next, categoryName) => {
@@ -21,24 +21,25 @@ module.exports = (app, co, mongoose) => {
     * Category page rendering everething goods with pagination
     */
    router.get(urls.category, co(function* (req, res) {
-      const _ = require('lodash');
-      const name = res.categoryName;
 
-      if (req.params[1]) { // If there is pagination action
-         const page = req.params[1]
-      }
+      const _ = require('lodash');
+      const categoryName = res.categoryName;
+      const page = (req.params[1] ? (req.params[1] - 1) : 0);
+      const options = require('./../helpers/category').disassemleUrlOptions( _, req.params[3] );
+      console.log(options);
 
       // Get category info
-      const category = yield mongoose.Category.findCategoryByUrl(name);
+      const category = yield mongoose.Category.findCategoryByUrl(categoryName); // { url: 'mens', title: 'Mens', _id: 573c7f72a9298a562b7ff4da }
       if (!category || !_.isObject(category) || Object.keys(category).length < 1) {
          return res.render('main/404');
       }
 
-      // Get goods list
-      const goods = yield mongoose.Goods.findGoodsByCategoryId(category._id);
+      const goods = yield mongoose.Goods.findGoodsByCategoryId(category._id, page, options);
+      return res.json(goods);
+      const goodsTotalCount = yield mongoose.Goods.getCountOfGoodsByCategoryId(category._id);
+
       res.render('category/allGoods', {
-         goods: goods,
-         category: category
+         data: {goods, category, goodsTotalCount, page}
       });
    }));
 
@@ -61,7 +62,9 @@ module.exports = (app, co, mongoose) => {
 /**
 Type of URL
 /category/mens
-/category/mens/page:2
+/category/mens/page/2
 /category/mens/subcat/shirts
 /category/mens/subcat/shirts/page/2
+
+http://localhost:5001/category/mens/options/sort:[1,2,4],discont:[1,3],coup:[23,5]
 **/
