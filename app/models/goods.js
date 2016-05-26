@@ -49,7 +49,7 @@ module.exports = (mongoose) => {
       findGoodsByCategoryId(categoryId, page, options) {
          const query = this
             .find({_category: categoryId, enabled: true})
-            .select('title price isSold discount')
+            .select('discount title price isSold')
             .skip(page * 3)
             .limit(3);
 
