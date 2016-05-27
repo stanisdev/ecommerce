@@ -9,7 +9,7 @@ const filters = {
    sort() {
       let sortParam;
       if (this.option.length !== 1 || (sortParam = this.option[0]) > 6 || sortParam < 1 ) {
-         throw new Error('Sort parameter have to has value between 1 and 6');
+         return;
       }
 
       const types = ['title', 'price', 'createdAt'];
@@ -26,11 +26,11 @@ const filters = {
    discounts() {
       const _ = require('lodash');
       const discounts = _.uniq(this.option);
-      const allowed = '12345'.split('');
-      if (discounts.length > 5 || !discounts.every(e => ~allowed.indexOf(e.toString())) ) {
-         throw new Error('Discounts filter has intolerable value');
-      }
+      const allowed = [1,2,3,4,5];
 
+      if (discounts.length > 5 || _.intersection(allowed, discounts).length != discounts.length) {
+         return;
+      }
       const or = { $or: [] };
       const conditions = [
          { discount: { $lte: 10 } },

@@ -8,29 +8,34 @@ module.exports = (config, init) => {
    db.on('error', console.error.bind(console, 'connection error:'));
    db.once('open', function() {
 
-      // To store once required models
-      mongoose._modeles = {};
+      const fs = require('fs');
+      const join = require('path').join;
+      const models = `${config.root_dir}/app/models/`;
 
-      // Determine method to get model
-      function getModel(name) {
-         const fs = require('fs');
-         if (mongoose._modeles.hasOwnProperty(name)) {
-            return mongoose._modeles[name];
-         }
+      mongoose._models = {};
 
-         const path = `${config.root_dir}/app/models/` + name.toLowerCase() + '.js';
-         return (mongoose._modeles[name] = require(path)(mongoose));
-      }
+      // Include models
+      fs.readdirSync(models)
+         .filter(file => ~file.search(/^[^\.].*\.js$/))
+         .forEach(file => {
+            let model = require(join(models, file))(mongoose);
+            let modelName = (file = file.slice(0, -3), file.charAt(0).toUpperCase() + file.substr(1));
+            mongoose._models[modelName] = model;
+         });
 
-      // Attach this method
-      const Proxy = require('harmony-proxy');
       const trappedMongoose = new Proxy(mongoose, {
          get: (mongoose, propName) => {
-            return (
-               propName in mongoose ? mongoose[propName] : getModel(propName)
-            );
+            return propName in mongoose ? mongoose[propName] : getModel(propName);
          }
       });
+
+      // Define method to get model
+      function getModel(name) {
+         if (!mongoose._models.hasOwnProperty(name)) {
+            throw new Error('There is no such model or property in mongoose-object');
+         }
+         return mongoose._models[name];
+      }
 
       // Run primary part of application
       init(trappedMongoose);

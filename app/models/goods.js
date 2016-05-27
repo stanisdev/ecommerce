@@ -22,13 +22,9 @@ module.exports = (mongoose) => {
          type: Boolean,
          default: true
       },
-      _category: {
-         type: mongoose.Schema.ObjectId,
-         ref: 'Category'
-      },
       _subcategory: {
          type: mongoose.Schema.ObjectId,
-         ref: 'Category.subcategory'
+         ref: 'Subcategory'
       },
       brands: [String],
       pictures: [String],
@@ -44,38 +40,35 @@ module.exports = (mongoose) => {
    goodsSchema.statics = {
 
       /**
-       * Find list of goods by categoryId
+       * Get overal count of goods belong certan subcategories
        */
-      findGoodsByCategoryId(categoryId, page, options) {
+      getCountOfGoodsBySubcategoryIds(ids, cb) {
+         return this
+            .count({_subcategory: { $in: ids }, enabled: true})
+            .exec(cb);
+      },
+
+      /**
+       * Find goods by list of subcategory-ids
+       */
+      findGoodsBySubcategoryIds(page, options, ids, cb) {
          const query = this
-            .find({_category: categoryId, enabled: true})
-            .select('discount title price isSold')
-            .skip(page * 3)
-            .limit(3);
+            .find({ enabled: true, _subcategory: { $in: ids } })
+            .populate({
+               path: '_subcategory',
+               select: '_id',
+            })
+            .select('title price discount _subcategory')
+            .limit(3)
+            .skip(page * 3);
 
+         // Set up filter-options
          require('./../helpers/category').setOptionsParam(query, options);
-         return query.exec();;
-      },
 
-      /**
-       * Find goods by its id
-       */
-      findOneGoodsById(goodsId, selectOptions) {
-         const id = new mongoose.Types.ObjectId(goodsId);
-         return this
-            .findOne({_id: goodsId, enabled: true})
-            .select(selectOptions)
-            .exec();
-      },
-
-      /**
-       * Get overal count of goods belongs certan category
-       */
-      getCountOfGoodsByCategoryId(catId) {
-         const categoryId = new mongoose.Types.ObjectId(catId);
-         return this
-            .count({_category: categoryId, enabled: true})
-            .exec();
+         query.exec(function(err, goods) {
+            if (err) throw new Error('Goods cannot be found');
+            cb(goods);
+         });
       }
    }
 

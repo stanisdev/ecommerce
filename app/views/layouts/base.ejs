@@ -90,7 +90,7 @@
                            <% for(var i=0; i<categoriesWithSubcats.length; i++) {%>
                               <li class="dropdown mega-dropdown active">
                                  <a class="color2" href="#" class="dropdown-toggle" data-toggle="dropdown">
-                                    <%= categoriesWithSubcats[i]._id.catTitle %>
+                                    <%= categoriesWithSubcats[i].title %>
                                     <span class="caret"></span>
                                  </a>
                                  <div class="dropdown-menu mega-dropdown-menu" style="width: 340px;">
@@ -99,10 +99,10 @@
                                           <div class="h_nav">
                                              <h4>Clothes</h4>
                                              <ul>
-                                                <% for(var y=0; y<categoriesWithSubcats[i].subcat.length; y++) {%>
+                                                <% for(var y=0; y<categoriesWithSubcats[i].subcategories.length; y++) {%>
                                                    <li>
-                                                      <a href="<%= '/' + categoriesWithSubcats[i]._id.catUrl + '/' + categoriesWithSubcats[i].subcat[y].url %>">
-                                                         <%= categoriesWithSubcats[i].subcat[y].title %>
+                                                      <a href="<%= '/' + categoriesWithSubcats[i].url + '/' + categoriesWithSubcats[i].subcategories[y].url %>">
+                                                         <%= categoriesWithSubcats[i].subcategories[y].title %>
                                                       </a>
                                                    </li>
                                                 <% } %>
@@ -110,7 +110,7 @@
                                           </div>
                                        </div>
                                        <div class="col1 col2">
-                                          <img src="/images/menu-<%= categoriesWithSubcats[i]._id.catUrl %>.png" class="img-responsive" alt="">
+                                          <img src="/images/menu-<%= categoriesWithSubcats[i].url %>.png" class="img-responsive" alt="">
                                        </div>
                                     </div>
                                  </div>

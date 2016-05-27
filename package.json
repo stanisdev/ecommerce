@@ -18,7 +18,7 @@
     "shop",
     "ecommerce"
   ],
-  "author": "Stanislav Zavalishin",
+  "author": "Stanislav Zavalishin <stanislav.web.developer@gmail.com>",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/stanisdev/ecommerce/issues"
@@ -29,7 +29,6 @@
     "ejs": "^2.4.1",
     "ejs-mate": "^2.3.0",
     "express": "^4.13.4",
-    "harmony-proxy": "^1.0.1",
     "lodash": "^4.12.0",
     "mongoose": "^4.4.16"
   }

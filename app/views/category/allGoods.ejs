@@ -32,8 +32,7 @@
 	         <div class="mid-popular">
 
 					<!-- Goods list -->
-
-	            <div ng-repeat="goodsItem in _.goodsData.goods" class="col-md-4 item-grid1 simpleCart_shelfItem">
+	            <div ng-cloak ng-repeat="item in _.data.goods" class="col-md-4 item-grid1 simpleCart_shelfItem">
 	               <div class=" mid-pop">
 	                  <div class="pro-img">
 	                     <img src="/images/pc.jpg" class="img-responsive" alt="">
@@ -45,8 +44,8 @@
 	                  <div class="mid-1">
 	                     <div class="women">
 	                        <div class="women-top">
-	                           <span>Women</span>
-	                           <h6><a href="single.html">Sed ut perspiciati</a></h6>
+	                           <span>{{ _.data.subcategories[item._subcategory._id].title }}</span>
+	                           <h6><a href="single.html">{{item.title}}</a></h6>
 	                        </div>
 	                        <div class="img item_add">
 	                           <a href="#"><img src="/images/ca.png" alt=""></a>
@@ -54,7 +53,7 @@
 	                        <div class="clearfix"></div>
 	                     </div>
 	                     <div class="mid-2">
-	                        <p><label>$100.00</label><em class="item_price">$70.00</em></p>
+	                        <p><label>$100.00</label><em class="item_price">{{item.price | currency}}</em></p>
 	                        <div class="block">
 	                           <div class="starbox small ghosting">
 	                              <div class="positioner">

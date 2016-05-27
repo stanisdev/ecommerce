@@ -27,19 +27,13 @@ module.exports = (app, co, mongoose) => {
       const page = (req.params[1] ? (req.params[1] - 1) : 0);
       const options = require('./../helpers/category').disassemleUrlOptions(req.params[3] );
 
-      // Get category info
-      const category = yield mongoose.Category.findCategoryByUrl(categoryName); // { url: 'mens', title: 'Mens', _id: 573c7f72a9298a562b7ff4da }
-      if (!category || !_.isObject(category) || Object.keys(category).length < 1) {
+      const data = yield mongoose.Category.findGoodsByCategeoryName(page, options, categoryName, mongoose);
+
+      // Check data on correct values
+      if (!data || !_.isObject(data) || Object.keys(data).length < 1 || data.goods.length < 1) {
          return res.render('main/404');
       }
-
-      const goods = yield mongoose.Goods.findGoodsByCategoryId(category._id, page, options);
-      // return res.json(goods);
-      const goodsTotalCount = yield mongoose.Goods.getCountOfGoodsByCategoryId(category._id);
-
-      res.render('category/allGoods', {
-         data: {goods, category, goodsTotalCount, page}
-      });
+      res.render('category/allGoods', {data});
    }));
 
 

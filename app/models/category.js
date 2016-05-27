@@ -1,9 +1,7 @@
-   'use strict';
-
 module.exports = (mongoose) => {
 
    // Define schema
-   var categorySchema = mongoose.Schema({
+   const categorySchema = mongoose.Schema({
       title: {
          type: String,
          required: true,
@@ -14,14 +12,9 @@ module.exports = (mongoose) => {
          required: true,
          unique: true
       },
-      subcategory: [{
-         title: {type: String, required: true},
-         url: {type: String, required: true},
-         enabled: {type: Boolean, default: true},
-         goods: [{
-            type: mongoose.Schema.ObjectId,
-            ref: 'Goods'
-         }]
+      subcategories: [{
+         type: mongoose.Schema.ObjectId,
+         ref: 'Subcategory'
       }],
       enabled: {
          type: Boolean,
@@ -33,60 +26,68 @@ module.exports = (mongoose) => {
    categorySchema.statics = {
 
       /**
-       * Get one category
+       * Get categories and subcategories for menu navigation
        */
-      findCategoryByUrl(category) {
+      getAllCategoriesAndSubcats() {
          return this
-            .findOne({url: category, enabled: true})
-            .select('title url')
+            .find({enabled: true})
+            .populate({
+               path: 'subcategories',
+               select: 'title url',
+               match: {enabled: true}
+            })
+            .select('title url subcategories')
             .exec();
       },
 
       /**
-       * Find and get category and appropriate subcategory title with url
+       * Find goods list found by category name
        */
-      findSubcategoryByGoodsId(categoryId, goodsId) {
-         /**
-          * Of course, we can use additional external key "_subcategory = category.subcategoryID"
-          * inside "Goods" collection and the query would be less and retrieving data would be faster.
-          * But in this case we pursue likely demonstration purposes :-)
-          */
-         return this.aggregate([
-            { $match : { _id : categoryId, enabled: true } },
-            { $unwind: "$subcategory" },
-            { $match: {
-                  "subcategory.goods": goodsId,
-                  "subcategory.enabled": true
-               }
-            },
-            { $project : {
-                  title : 1,
-                  url: 1,
-                  'subcategory.title': 1,
-                  'subcategory.url': 1
-               }
-            }
-         ]).exec();
-      },
+      findGoodsByCategeoryName(page, options, category, mongoose) {
 
-      /**
-       * Get categories and subcategories for menu navigation
-       */
-      getAllCategoriesAndSubcats() {
-         return this.aggregate([
-            { $match : { enabled : true } },
-            { $unwind : '$subcategory' },
-            { $match : { 'subcategory.enabled' : true } },
-            { $group: {
-                  _id: { catTitle: '$title', catUrl: '$url' },
-                  subcat: {
-                     $push: {url: '$subcategory.url', title: '$subcategory.title'}
-                  }
+         return new Promise((resolve, reject) => {
+            this
+            .findOne({ url: category, enabled: true })
+            .populate({
+               path: 'subcategories',
+               match: { enabled: true },
+               select: '_id title url'
+            })
+            .select('title url subcategories')
+            .exec(function (err, category) {
+
+               if (err || !category || Object.keys(category).length < 1 || category.subcategories.length < 1) {
+                  return resolve(false);
                }
-            },
-            { $sort : { '_id.catUrl' : 1 } }
-         ]).exec();
-      },
+
+               // Prepare result object
+               const _ = require('lodash');
+               const keys = category.subcategories.map(e => e._id);
+               const data = {
+                  category: { title: category.title, url: category.url },
+               };
+
+               // Find goods by subcategories id
+               mongoose.Goods.findGoodsBySubcategoryIds(page, options, keys, (goods) => {
+                  const uniqSubcats = _.uniq(goods.map(e => e._subcategory._id));
+
+                  const values = category.subcategories.map(e => {
+                     return { title: e.title, url: e.url };
+                  });
+
+                  data.subcategories = _.pick(_.zipObject(keys, values), uniqSubcats);;
+                  data.goods = goods;
+
+                  // Fugire out total count of goods by subcategy-ids
+                  mongoose.Goods.getCountOfGoodsBySubcategoryIds(keys, (err, count) => {
+                     if (err) throw new Error('Total count of goods cannot be calculated');
+                     data.goodsTotalCount = count;
+                     resolve(data);
+                  });
+               });
+            });
+         });
+      }
    };
 
    return mongoose.model('Category', categorySchema);
