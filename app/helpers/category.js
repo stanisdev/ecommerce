@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * Define filters and behavior
  */

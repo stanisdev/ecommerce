@@ -1,7 +1,6 @@
 'use strict';
 
 const path = require('path');
-
 const config = {
    express: {
       port: 5001

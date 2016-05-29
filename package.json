@@ -4,7 +4,7 @@
   "description": "Demo app online clothes shop",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon app.js"
+    "start": "NODE_ENV=development nodemon app.js"
   },
   "repository": {
     "type": "git",
@@ -28,8 +28,10 @@
     "co-express": "^1.2.1",
     "ejs": "^2.4.1",
     "ejs-mate": "^2.3.0",
+    "errorhandler": "^1.4.3",
     "express": "^4.13.4",
     "lodash": "^4.12.0",
-    "mongoose": "^4.4.16"
+    "mongoose": "^4.4.16",
+    "morgan": "^1.7.0"
   }
 }

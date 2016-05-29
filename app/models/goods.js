@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports = (mongoose) => {
 
    // Schema
@@ -42,16 +44,16 @@ module.exports = (mongoose) => {
       /**
        * Get overal count of goods belong certan subcategories
        */
-      getCountOfGoodsBySubcategoryIds(ids, cb) {
+      getCountOfGoodsBySubcategoryIds(ids) {
          return this
             .count({_subcategory: { $in: ids }, enabled: true})
-            .exec(cb);
+            .exec();
       },
 
       /**
        * Find goods by list of subcategory-ids
        */
-      findGoodsBySubcategoryIds(page, options, ids, cb) {
+      findGoodsBySubcategoryIds(page, options, ids, category) {
          const query = this
             .find({ enabled: true, _subcategory: { $in: ids } })
             .populate({
@@ -65,9 +67,44 @@ module.exports = (mongoose) => {
          // Set up filter-options
          require('./../helpers/category').setOptionsParam(query, options);
 
-         query.exec(function(err, goods) {
-            if (err) throw new Error('Goods cannot be found');
-            cb(goods);
+         return new Promise((resolve, reject) => {
+            query.exec((err, goods) => {
+               if (err) throw new Error('Goods cannot be found');
+
+               const _ = require('lodash');
+               const uniqSubcats = _.uniq(goods.map(e => e._subcategory._id));
+               const values = category.subcategories.map(e => {
+                  return { title: e.title, url: e.url };
+               });
+
+               const data = {};
+               data.subcategories = _.pick(_.zipObject(ids, values), uniqSubcats);;
+               data.goods = goods;
+               resolve(data);
+            });
+         });
+      },
+
+      /**
+       * Find one goods by id
+       */
+      findOneGoodsById(id, mongoose) {
+         return new Promise((resolve, reject) => {
+
+            this
+               .findOne({_id: id})
+               .populate('_subcategory', 'title url')
+               .select('title price description tags brands isSold discount _subcategory')
+               .exec((err, goods) => {
+                  if (err || !goods) return resolve(false);
+
+                  // Find category info
+                  mongoose.Category.findCategoryBySubcategoryId(goods._subcategory._id, (err, category) => {
+
+                     if (err || !category) return resolve(false);
+                     resolve({goods, category});
+                  });
+               });
          });
       }
    }

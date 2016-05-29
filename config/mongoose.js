@@ -1,3 +1,8 @@
+'use strict';
+
+/**
+ * Setting mongoose
+ */
 module.exports = (config, init) => {
 
    const mongoose = require('mongoose');
@@ -12,33 +17,13 @@ module.exports = (config, init) => {
       const join = require('path').join;
       const models = `${config.root_dir}/app/models/`;
 
-      mongoose._models = {};
-
       // Include models
       fs.readdirSync(models)
          .filter(file => ~file.search(/^[^\.].*\.js$/))
-         .forEach(file => {
-            let model = require(join(models, file))(mongoose);
-            let modelName = (file = file.slice(0, -3), file.charAt(0).toUpperCase() + file.substr(1));
-            mongoose._models[modelName] = model;
-         });
-
-      const trappedMongoose = new Proxy(mongoose, {
-         get: (mongoose, propName) => {
-            return propName in mongoose ? mongoose[propName] : getModel(propName);
-         }
-      });
-
-      // Define method to get model
-      function getModel(name) {
-         if (!mongoose._models.hasOwnProperty(name)) {
-            throw new Error('There is no such model or property in mongoose-object');
-         }
-         return mongoose._models[name];
-      }
+         .forEach(file => require(join(models, file))(mongoose));
 
       // Run primary part of application
-      init(trappedMongoose);
       console.log('MongoDB has been connected!');
+      init();
    });
 };
