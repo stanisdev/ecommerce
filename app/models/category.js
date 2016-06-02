@@ -45,7 +45,7 @@ module.exports = (mongoose) => {
       /**
        * Find goods list found by category name
        */
-      findGoodsByCategeoryName(page, options, category, mongoose) {
+      findGoodsByCategeoryUrl(page, category, mongoose) {
 
          return new Promise((resolve, reject) => {
             this
@@ -66,7 +66,7 @@ module.exports = (mongoose) => {
                   const _ = require('lodash');
                   const keys = category.subcategories.map(e => e._id);
                   const data = {
-                     category: { title: category.title, url: category.url },
+                     category: { _id: category._id, title: category.title, url: category.url },
                   };
 
                   resolve({data, keys, category});

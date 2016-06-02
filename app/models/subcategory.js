@@ -29,13 +29,6 @@ module.exports = (mongoose) => {
    });
 
    subcategorySchema.statics = {
-
-      findAllGoodsByCategeoryName(category) {
-         return this
-            .find({enabled: true})
-            .populate('_category', 'title url')
-            .exec();
-      }
    };
 
    return mongoose.model('Subcategory', subcategorySchema);

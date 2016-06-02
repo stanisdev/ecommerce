@@ -31,6 +31,7 @@
 	      <div class="col-md-9">
 	         <div class="mid-popular">
 
+
 					<!-- Goods list -->
 	            <div
 						ng-cloak
@@ -86,9 +87,19 @@
 	                  </div>
 	               </div>
 	            </div>
-
 					<!-- //Goods list -->
 
+
+					<!-- Pagination -->
+					<div ng-show="_.data.goodsTotalCount > 3">
+						<span style="margin-right: 3px;">Pagination:</span>
+						<button ng-click="_.prevPage()" type="button" ng-class="'btn btn-sm btn-warning ' + _.prevPageBtn">Prev</button>
+						<span style="margin: 0 8px 0 8px;">
+							{{_.curPage}} - {{_.maxPage}}
+						</span>
+						<button ng-click="_.nextPage()" type="button" ng-class="'btn btn-sm btn-warning ' + _.nextPageBtn">Next</button>
+					</div>
+					<!-- //Pagination -->
 
 
 	            <div class="clearfix"></div>
@@ -141,13 +152,13 @@
 				<section class="sky-form">
 					<h4 class="cate">Sort</h4>
 	            <div style="padding: 20px 0 21px 0;">
-						<select class="" name="">
-							<option value="alphabetically-asc">Alphabetically, A-Z</option>
-							<option value="alphabetically-desc">Alphabetically, Z-A</option>
-							<option value="price-increase">Price, low to high</option>
-							<option value="price-decrease">Price, high to low</option>
-							<option value="date-decrease">Date, new to old</option>
-							<option value="date-increase">Date, old to new</option>
+						<select ng-model="_.sort">
+							<option value="1">Alphabetically, A-Z</option>
+							<option value="2">Alphabetically, Z-A</option>
+							<option value="3">Price, low to high</option>
+							<option value="4">Price, high to low</option>
+							<option value="5">Date, new to old</option>
+							<option value="6">Date, old to new</option>
 						</select>
 	            </div>
 				</section>
@@ -157,13 +168,13 @@
 	            <h4 class="cate">Discounts</h4>
 	            <div class="row row1 scroll-pane">
 	               <div class="col col-4">
-	                  <label class="checkbox"><input type="checkbox" name="checkbox" checked=""><i></i>Upto - 10% (20)</label>
+	                  <label class="checkbox"><input ng-model="_.discounts[0]" type="checkbox" name="checkbox"><i></i>Upto - 10% (20)</label>
 	               </div>
 	               <div class="col col-4">
-	                  <label class="checkbox"><input type="checkbox" name="checkbox"><i></i>40% - 50% (5)</label>
-	                  <label class="checkbox"><input type="checkbox" name="checkbox"><i></i>30% - 20% (7)</label>
-	                  <label class="checkbox"><input type="checkbox" name="checkbox"><i></i>20% - 10% (2)</label>
-	                  <label class="checkbox"><input type="checkbox" name="checkbox"><i></i>Other(50)</label>
+	                  <label class="checkbox"><input ng-model="_.discounts[1]" type="checkbox" name="checkbox"><i></i>40% - 50% (5)</label>
+	                  <label class="checkbox"><input ng-model="_.discounts[2]" type="checkbox" name="checkbox"><i></i>30% - 20% (7)</label>
+	                  <label class="checkbox"><input ng-model="_.discounts[3]" type="checkbox" name="checkbox"><i></i>20% - 10% (2)</label>
+	                  <label class="checkbox"><input ng-model="_.discounts[4]" type="checkbox" name="checkbox"><i></i>Other(50)</label>
 	               </div>
 	            </div>
 	         </section>
@@ -172,17 +183,13 @@
 	         <section class="sky-form">
 	            <h4 class="cate">Type</h4>
 	            <div class="row row1 scroll-pane">
+
+						<!-- Type of goods (subcategories) -->
 	               <div class="col col-4">
-	                  <label class="checkbox"><input type="checkbox" name="checkbox" checked=""><i></i>Sofa Cum Beds (30)</label>
-	               </div>
-	               <div class="col col-4">
-	                  <label class="checkbox"><input type="checkbox" name="checkbox"><i></i>Bags  (30)</label>
-	                  <label class="checkbox"><input type="checkbox" name="checkbox"><i></i>Caps &amp; Hats (30)</label>
-	                  <label class="checkbox"><input type="checkbox" name="checkbox"><i></i>Jackets &amp; Coats   (30)</label>
-	                  <label class="checkbox"><input type="checkbox" name="checkbox"><i></i>Jeans  (30)</label>
-	                  <label class="checkbox"><input type="checkbox" name="checkbox"><i></i>Shirts   (30)</label>
-	                  <label class="checkbox"><input type="checkbox" name="checkbox"><i></i>Sunglasses  (30)</label>
-	                  <label class="checkbox"><input type="checkbox" name="checkbox"><i></i>Swimwear  (30)</label>
+							<label ng-repeat="subcat in _.data.subcategories" class="checkbox">
+								<input type="checkbox" name="checkbox">
+								<i></i>{{subcat.title}}  ({{subcat.goodsCount}})
+							</label>
 	               </div>
 	            </div>
 	         </section>

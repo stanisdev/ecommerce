@@ -106,6 +106,26 @@ module.exports = (mongoose) => {
                   });
                });
          });
+      },
+
+      /**
+       * Get totol count of goods in each subcategory
+       */
+      getTotalCountGoodsBySubcategoryId(ids) {
+         return this
+            .aggregate([
+               { $match: {
+                     enabled: true,
+                     _subcategory: { $in: ids }
+                  }
+               },
+               { $group: {
+                  _id: "$_subcategory",
+                     goodsCount: { $sum: 1 }
+                  }
+               }
+            ])
+            .exec();
       }
    }
 

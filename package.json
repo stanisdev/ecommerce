@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/stanisdev/ecommerce#readme",
   "dependencies": {
+    "body-parser": "^1.15.1",
     "co-express": "^1.2.1",
     "ejs": "^2.4.1",
     "ejs-mate": "^2.3.0",
