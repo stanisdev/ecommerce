@@ -29,7 +29,7 @@ module.exports = (config) => {
    if (env === 'development') app.use(errorhandler());
 
    // Logging middleware
-   if (env !== 'test') app.use(morgan('dev'));
+   //if (env !== 'test') app.use(morgan('dev'));
 
    return app;
 };

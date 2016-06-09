@@ -126,6 +126,26 @@ module.exports = (mongoose) => {
                }
             ])
             .exec();
+      },
+
+      /**
+       * Find all brands by list of subcategories ids
+       */
+      getAllBrandsBySubcategoryIds(ids) {
+         return this
+            .aggregate([
+               { $match: {
+                     enabled: true,
+                     _subcategory: {
+                        $in: ids
+                     }
+                  }
+               },
+               { $group: { _id: "$brands" } },
+               { $unwind: "$_id" },
+               { $group: { _id: "$_id" } }
+            ])
+            .exec();
       }
    }
 

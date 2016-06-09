@@ -34,6 +34,7 @@ exports.allGoods = wrap(function* (req, res) {
 
    let subcats = category.category.subcategories;
    const subcatsGoodsCount = yield Goods.getTotalCountGoodsBySubcategoryId(subcats.map(e => e._id));
+   const brands = yield Goods.getAllBrandsBySubcategoryIds(category.keys);
 
    // Prepare subcategory data
    subcats = subcats.map(e => {
@@ -45,6 +46,7 @@ exports.allGoods = wrap(function* (req, res) {
    const data = Object.assign(category.data, goods);
    data.subcategories = subcats;
    data.goodsTotalCount = goodsCount;
+   data.brands = brands;
 
    // Check data on correct values
    if (!data || !_.isObject(data) || Object.keys(data).length < 1 || data.goods.length < 1) {
