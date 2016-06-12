@@ -82,6 +82,21 @@ module.exports = (mongoose) => {
             .findOne({subcategories: id})
             .select('title url')
             .exec(cb);
+      },
+
+      /**
+       * Find list of subcategories by given category_id
+       */
+      findAllSubcategoriesByCategoryId(id) {
+         return this
+            .findOne({_id: id, enabled: true})
+            .populate({
+               path: 'subcategories',
+               match: {enabled: true},
+               select: 'url title'
+            })
+            .select('subcategories')
+            .exec();
       }
    };
 

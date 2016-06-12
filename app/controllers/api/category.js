@@ -11,7 +11,7 @@ const Goods = mongoose.model('Goods');
 /**
  * Get list of goods as "json"
  */
-exports.getPage = wrap(function* (req, res) {
+exports.getGoods = wrap(function* (req, res) {
    const params = req.body;
    if (Object.keys(params).length < 1) {
       return res
@@ -19,8 +19,18 @@ exports.getPage = wrap(function* (req, res) {
          .send('Incorrect post parameters!');
    }
 
-   //const category = yield Category.findGoodsByCategeoryUrl(page, categoryName, mongoose);
-   //const goods = yield Goods.findGoodsBySubcategoryIds(page, options, category.keys, category.category);
-   //const goodsCount = yield Goods.getCountOfGoodsBySubcategoryIds(category.keys);
-   res.json(req.body);
+   // Get list of categories
+   const subcats = [];
+   if (params.types.length > 0) {
+      subcats.push(...params.types);
+   }
+   else {
+      const category = yield Category.findAllSubcategoriesByCategoryId(params.categoryId);
+      subcats.push(...category.subcategories.map(e => e._id));
+   }
+
+   // Get goods by subcategories and filters
+   const options = {sort: params.sort, discounts: params.discounts, brands: params.brands};
+   const goods = yield Goods.findGoodsBySubcategoryIds(params.page - 1, options, subcats, null, true);
+   res.json(goods);
 });

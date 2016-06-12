@@ -21,7 +21,7 @@ module.exports = (app, config) => {
    app.get('/', category.index);
    app.get('/demo-data', category.demoData);
    router.category.get(/^\/(page\/(\d+))?(\/)?(options\/([a-z]+:\[(\d,?)+\],?)*)?$/, category.allGoods);
-   router.api.post('/getPage', api.getPage);
+   router.api.post('/getGoods', api.getGoods);
 
    // Fill category-name parameter
    app.param('categoryName', (req, res, next, categoryName) => {

@@ -30,7 +30,7 @@ const filters = {
       const discounts = _.uniq(this.option);
       const allowed = [1,2,3,4,5];
 
-      if (discounts.length > 5 || _.intersection(allowed, discounts).length != discounts.length) {
+      if (discounts.length > 5 || discounts.length < 1 || _.intersection(allowed, discounts).length != discounts.length) {
          return;
       }
       const or = { $or: [] };
@@ -53,6 +53,16 @@ const filters = {
          or.$or.push(cond);
       });
       this.query.where(or);
+   },
+   /**
+    * Brands filter
+    */
+   brands() {
+      const brands = this.option;
+      if (brands.length < 1) {
+         return;
+      }
+      this.query.where({brands: {$in: brands}});
    }
 };
 
@@ -80,7 +90,7 @@ module.exports.setOptionsParam = (query, options) => {
 
    for (let option in options) {
       if (!filters.hasOwnProperty(option)) {
-         throw new Error('There is no such filter');
+         throw new Error(`There is no "${option}" filter`);
       }
       filters[option].call( {option: options[option], query: query} );
    }

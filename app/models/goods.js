@@ -53,7 +53,7 @@ module.exports = (mongoose) => {
       /**
        * Find goods by list of subcategory-ids
        */
-      findGoodsBySubcategoryIds(page, options, ids, category) {
+      findGoodsBySubcategoryIds(page, options, ids, category, api) {
          const query = this
             .find({ enabled: true, _subcategory: { $in: ids } })
             .populate({
@@ -67,6 +67,9 @@ module.exports = (mongoose) => {
          // Set up filter-options
          require('./../helpers/category').setOptionsParam(query, options);
 
+         if (api) {
+            return query.exec();
+         }
          return new Promise((resolve, reject) => {
             query.exec((err, goods) => {
                if (err) throw new Error('Goods cannot be found');
@@ -78,7 +81,7 @@ module.exports = (mongoose) => {
                });
 
                const data = {};
-               data.subcategories = _.pick(_.zipObject(ids, values), uniqSubcats);;
+               data.subcategories = _.pick(_.zipObject(ids, values), uniqSubcats);
                data.goods = goods;
                resolve(data);
             });

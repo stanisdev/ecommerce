@@ -187,7 +187,7 @@
 						<!-- Type of goods (subcategories) -->
 	               <div class="col col-4">
 							<label ng-repeat="subcat in _.data.subcategories" class="checkbox">
-								<input type="checkbox" name="checkbox">
+								<input type="checkbox" ng-model="_.types[$index]" name="checkbox">
 								<i></i>{{subcat.title}}  ({{subcat.goodsCount}})
 							</label>
 	               </div>
@@ -198,7 +198,7 @@
 	            <div class="row row1 scroll-pane">
 	               <div class="col col-4">
 	                  <label class="checkbox" ng-repeat="brand in _.data.brands">
-								<input type="checkbox" name="checkbox"><i></i>{{brand._id}}
+								<input type="checkbox" ng-model="_.brands[$index]" name="checkbox"><i></i>{{brand._id}}
 							</label>
 	               </div>
 	            </div>
