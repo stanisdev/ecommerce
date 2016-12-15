@@ -31,5 +31,5 @@ module.exports = (mongoose) => {
    subcategorySchema.statics = {
    };
 
-   return mongoose.model('Subcategory', subcategorySchema);
+   mongoose.model('Subcategory', subcategorySchema);
 };

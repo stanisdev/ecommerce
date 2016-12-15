@@ -1,6 +1,11 @@
 'use strict';
 
 /**
+ * Dependencies
+ */
+const _ = require('lodash');
+
+/**
  * Define filters and behavior
  */
 const filters = {
@@ -26,7 +31,6 @@ const filters = {
     * Filter by discounts
     */
    discounts() {
-      const _ = require('lodash');
       const discounts = _.uniq(this.option);
       const allowed = [1,2,3,4,5];
 
@@ -87,10 +91,9 @@ module.exports.disassemleUrlOptions = (options) => {
  * Get object for mongoose query where-clause
  */
 module.exports.setOptionsParam = (query, options) => {
-
    for (let option in options) {
       if (!filters.hasOwnProperty(option)) {
-         throw new Error(`There is no "${option}" filter`);
+         continue;
       }
       filters[option].call( {option: options[option], query: query} );
    }

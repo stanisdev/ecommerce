@@ -1,6 +1,13 @@
 'use strict';
 
-module.exports = (mongoose) => {
+/**
+ * Dependencies
+ */
+const _ = require('lodash');
+
+module.exports = (mongoose, config) => {
+
+   const serviceCategory = require(config.app_dir + '/services/category');
 
    // Schema
    const goodsSchema = mongoose.Schema({
@@ -53,7 +60,7 @@ module.exports = (mongoose) => {
       /**
        * Find goods by list of subcategory-ids
        */
-      findGoodsBySubcategoryIds(page, options, ids, category, api) {
+      findGoodsBySubcategoryIds(page, options, ids, category, isApi) {
          const query = this
             .find({ enabled: true, _subcategory: { $in: ids } })
             .populate({
@@ -61,30 +68,26 @@ module.exports = (mongoose) => {
                select: '_id',
             })
             .select('title price discount _subcategory')
-            .limit(3)
-            .skip(page * 3);
+            .limit(config.goods.per_page)
+            .skip(page * config.goods.per_page);
 
          // Set up filter-options
-         require('./../helpers/category').setOptionsParam(query, options);
+         serviceCategory.setOptionsParam(query, options);
 
-         if (api) {
+         if (isApi) {
             return query.exec();
          }
          return new Promise((resolve, reject) => {
-            query.exec((err, goods) => {
-               if (err) throw new Error('Goods cannot be found');
+            query.exec().then(goods => {
+              //const uniqSubcats = _.uniq(goods.map(e => e._subcategory._id));
+              //const values = category.subcategories.map(e => ({ title: e.title, url: e.url }));
 
-               const _ = require('lodash');
-               const uniqSubcats = _.uniq(goods.map(e => e._subcategory._id));
-               const values = category.subcategories.map(e => {
-                  return { title: e.title, url: e.url };
-               });
-
-               const data = {};
-               data.subcategories = _.pick(_.zipObject(ids, values), uniqSubcats);
-               data.goods = goods;
-               resolve(data);
-            });
+              const data = {
+                //subcategories: _.pick(_.zipObject(ids, values), uniqSubcats),
+                goods: goods
+              };
+              resolve(data);
+            }).catch(reject);
          });
       },
 
@@ -102,7 +105,7 @@ module.exports = (mongoose) => {
                   if (err || !goods) return resolve(false);
 
                   // Find category info
-                  mongoose.Category.findCategoryBySubcategoryId(goods._subcategory._id, (err, category) => {
+                  mongoose.model('Category').findCategoryBySubcategoryId(goods._subcategory._id, (err, category) => {
 
                      if (err || !category) return resolve(false);
                      resolve({goods, category});
@@ -112,7 +115,7 @@ module.exports = (mongoose) => {
       },
 
       /**
-       * Get totol count of goods in each subcategory
+       * Get total count of goods in each subcategory
        */
       getTotalCountGoodsBySubcategoryId(ids) {
          return this
@@ -149,8 +152,66 @@ module.exports = (mongoose) => {
                { $group: { _id: "$_id" } }
             ])
             .exec();
+      },
+
+      /**
+       * To aggregate count of discounts
+       */
+      getAggregatedDiscountsCount(ids) {
+         return this
+            .aggregate([
+               { $match: {
+                     enabled: true,
+                     _subcategory: {
+                        $in: ids
+                     }
+                  }
+               },
+               { $project: {
+                  item: 1,
+                  discount: {
+                     $cond: {
+                        if: { $gte: [ "$discount", 50 ] }, // > 50 || 30 <= X < 40
+                        then: 5,
+                        else: {
+                           $cond: {
+                              if: { $lte: [ "$discount", 10 ] },  // <= 10
+                              then: 1,
+                              else: {
+                                 $cond: {
+                                    if: { $and: [{$lt: [ "$discount", 20 ]}, {$gte: [ "$discount", 10 ]}] }, // 10 <= X < 20
+                                    then: 4,
+                                    else: {
+                                       $cond: {
+                                          if: { $and: [{$lt: [ "$discount", 30 ]}, {$gte: [ "$discount", 20 ]}] }, // 20 <= X < 30
+                                          then: 3,
+                                          else: {
+                                             $cond: {
+                                                if: { $and: [{$lt: [ "$discount", 50 ]}, {$gte: [ "$discount", 40 ]}] }, // 40 <= X < 50
+                                                then: 4,
+                                                else: 5
+                                             }
+                                          }
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                     }
+                  }
+               }
+               },
+               { $group: {
+                  _id: "$discount",
+                  count: {
+                     $sum: 1
+                  }
+               }
+            }])
+         .exec();
       }
    }
 
-   return mongoose.model('Goods', goodsSchema);
+   mongoose.model('Goods', goodsSchema);
 };

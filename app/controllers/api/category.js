@@ -1,36 +1,38 @@
 'use strict';
 
 /**
- * Dependencies
+ * Routes
  */
-const wrap = require('co-express');
-const mongoose = require('mongoose');
-const Category = mongoose.model('Category');
-const Goods = mongoose.model('Goods');
+module.exports = function (app, express, mongoose, wrap, config) {
 
-/**
- * Get list of goods as "json"
- */
-exports.getGoods = wrap(function* (req, res) {
-   const params = req.body;
-   if (Object.keys(params).length < 1) {
-      return res
-         .status(500)
-         .send('Incorrect post parameters!');
-   }
+  var router = express.Router();
 
-   // Get list of categories
-   const subcats = [];
-   if (params.types.length > 0) {
-      subcats.push(...params.types);
-   }
-   else {
-      const category = yield Category.findAllSubcategoriesByCategoryId(params.categoryId);
-      subcats.push(...category.subcategories.map(e => e._id));
-   }
+  /**
+   * Get list of goods as "json"
+   */
+  router.post('/getGoods', wrap(async function(req, res) {
+     const params = req.body;
+     if (Object.keys(params).length < 1) {
+        return res
+           .status(500)
+           .send('Incorrect post parameters!');
+     }
 
-   // Get goods by subcategories and filters
-   const options = {sort: params.sort, discounts: params.discounts, brands: params.brands};
-   const goods = yield Goods.findGoodsBySubcategoryIds(params.page - 1, options, subcats, null, true);
-   res.json(goods);
-});
+     // Get list of categories
+     const subcats = [];
+     if (params.types.length > 0) {
+        subcats.push(...params.types);
+     }
+     else {
+        const category = await mongoose.model('Category').findAllSubcategoriesByCategoryId(params.categoryId);
+        subcats.push(...category.subcategories.map(e => e._id));
+     }
+
+     // Get goods by subcategories and filters
+     const options = {sort: params.sort, discounts: params.discounts, brands: params.brands};
+     const goods = await mongoose.model('Goods').findGoodsBySubcategoryIds(params.page - 1, options, subcats, null, true);
+     res.json(goods);
+  }));
+
+  app.use('/api/category', router);
+};

@@ -35,8 +35,8 @@
 					<!-- Goods list -->
 	            <div
 						ng-cloak
-						ng-repeat="item in _.data.goods"
-						ng-init="goodsDetailUrl = '/category/' + _.data.category.url + '/goods/' + item._id"
+						ng-repeat="goodsItem in _.data.goods"
+						ng-init="goodsDetailUrl = '/category/' + _.data.category.url + '/goods/' + goodsItem._id"
 
 						class="col-md-4 item-grid1 simpleCart_shelfItem">
 
@@ -44,7 +44,7 @@
 	                  <div class="pro-img">
 
 								<!-- Preview image -->
-	                     <img style="height: 309px; margin: 0 auto;" ng-src="/images/goods/{{item._id}}.jpg" class="img-responsive" alt="">
+	                     <img style="height: 309px; margin: 0 auto;" ng-src="/images/goods/{{goodsItem._id}}.jpg" class="img-responsive" alt="">
 	                     <div class="zoom-icon ">
 	                        <a class="picture" href="images/pc.jpg" rel="title">
 										<i class="glyphicon glyphicon-search icon "></i>
@@ -55,8 +55,8 @@
 	                  <div class="mid-1">
 	                     <div class="women">
 	                        <div class="women-top">
-	                           <span>{{ _.data.subcategories[item._subcategory._id].title }}</span>
-	                           <h6><a href="{{goodsDetailUrl}}">{{item.title}}</a></h6>
+	                           <span>{{ _.getSubcategoryTitleById( goodsItem._subcategory._id ) }}</span>
+	                           <h6><a href="{{goodsDetailUrl}}">{{goodsItem.title}}</a></h6>
 	                        </div>
 	                        <div class="img item_add">
 	                           <a href="{{goodsDetailUrl}}"><img src="/images/ca.png" alt=""></a>
@@ -64,7 +64,7 @@
 	                        <div class="clearfix"></div>
 	                     </div>
 	                     <div class="mid-2">
-	                        <p><label>$100.00</label><em class="item_price">{{item.price | currency}}</em></p>
+	                        <p><label>$100.00</label><em class="item_price">{{goodsItem.price | currency}}</em></p>
 	                        <div class="block">
 	                           <div class="starbox small ghosting">
 	                              <div class="positioner">

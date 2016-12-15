@@ -1,19 +1,12 @@
 'use strict';
 
-/**
- * Dependencies
- */
-const mongoose = require('mongoose');
-const Category = mongoose.model('Category');
-const wrap = require('co-express');
-
-module.exports = (app) => {
+module.exports = (app, mongoose, wrap) => {
 
    /**
-    * Menu navigation
-    */
-   app.use(wrap(function* (req, res, next) {
-      app.locals.categoriesWithSubcats = yield Category.getAllCategoriesAndSubcats();
+   * Menu navigation
+   */
+   app.use(wrap(async function(req, res, next) {
+      app.locals.categoriesWithSubcats = await mongoose.model('Category').getAllCategoriesAndSubcats();
       next();
    }));
 };

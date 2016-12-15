@@ -1,29 +1,23 @@
 'use strict';
 
-/**
- * Setting mongoose
- */
-module.exports = (config, init) => {
+const glob = require('glob');
 
-   const mongoose = require('mongoose');
-   mongoose.connect(`mongodb://${config.mongo.host}:${config.mongo.port}/${config.mongo.db}`);
+module.exports = (config) => {
+  return new Promise(function (resolve, reject) {
+    var mongoose = require('mongoose');
+    mongoose.Promise = Promise;
+    mongoose.connect(`mongodb://${config.mongo.host}:${config.mongo.port}/${config.mongo.db}`);
+    //mongoose.set('debug', true);
 
-   // Try to connect
-   const db = mongoose.connection;
-   db.on('error', console.error.bind(console, 'connection error:'));
-   db.once('open', function() {
-
-      const fs = require('fs');
-      const join = require('path').join;
-      const models = `${config.root_dir}/app/models/`;
-
-      // Include models
-      fs.readdirSync(models)
-         .filter(file => ~file.search(/^[^\.].*\.js$/))
-         .forEach(file => require(join(models, file))(mongoose));
-
-      // Run primary part of application
+    const db = mongoose.connection;
+    db.on('error', reject);
+    db.once('open', function() {
+      const models = glob.sync(config.app_dir + '/models/*.js');
+      models.forEach(model => {
+        require(model)(mongoose, config);
+      });
       console.log('MongoDB has been connected!');
-      init();
-   });
+      resolve(mongoose);
+    });
+  });
 };

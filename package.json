@@ -4,7 +4,7 @@
   "description": "Demo app online clothes shop",
   "main": "app.js",
   "scripts": {
-    "start": "NODE_ENV=development nodemon app.js"
+    "start": "nodemon --harmony app.js"
   },
   "repository": {
     "type": "git",
@@ -18,21 +18,20 @@
     "shop",
     "ecommerce"
   ],
-  "author": "Stanislav Zavalishin <stanislav.web.developer@gmail.com>",
+  "author": "Stanislav Zavalishin <javascript.nodejs.developer@gmail.com>",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/stanisdev/ecommerce/issues"
   },
   "homepage": "https://github.com/stanisdev/ecommerce#readme",
   "dependencies": {
-    "body-parser": "^1.15.1",
-    "co-express": "^1.2.1",
-    "ejs": "^2.4.1",
+    "body-parser": "^1.15.2",
+    "eejs": "^1.0.0",
     "ejs-mate": "^2.3.0",
-    "errorhandler": "^1.4.3",
-    "express": "^4.13.4",
-    "lodash": "^4.12.0",
-    "mongoose": "^4.4.16",
-    "morgan": "^1.7.0"
+    "errorhandler": "^1.5.0",
+    "express": "^4.14.0",
+    "glob": "^7.1.1",
+    "lodash": "^4.17.2",
+    "mongoose": "^4.7.1"
   }
 }

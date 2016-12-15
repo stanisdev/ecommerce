@@ -4,7 +4,8 @@ const ecommerce = angular.module('ecommerceApp', []);
  * Goods controller constructor
  */
 ecommerce.controller('GoodsCtrl', function GoodsController(helper, ajax) {
-   const data = JSON.parse(angular.element(_goodsData).val());
+   const data = JSON.parse(angular.element(_goodsData).val()); // http://jsonformatter.org/741ac8
+   console.log(angular.element(_goodsData).val());
    this.data = data;
    this.categoryId = data.category._id;
    this.sort = '1';
@@ -31,6 +32,16 @@ ecommerce.controller('GoodsCtrl', function GoodsController(helper, ajax) {
       this.curPage++;
       ajax.getPage(this);
    };
+
+   /**
+    * Get subcategory title by id
+    */
+   this.getSubcategoryTitleById = (subcategoryId) => {
+      var subcategory = this.data.subcategories.filter(s => s._id == subcategoryId);
+      if (subcategory.length < 1) return;
+      return subcategory[0] instanceof Object && "title" in subcategory[0] ? subcategory[0].title : "";
+   };
+
    console.log( data );
 });
 
@@ -56,19 +67,6 @@ ecommerce.factory('helper', function() {
          }
       },
       getDataObject(scope) {
-         const {discounts, types, brands} = this.prepareFilterArray(scope);
-
-         // Prepare and return data-object for Ajax query
-         return {
-            categoryId: scope.categoryId,
-            page: scope.curPage,
-            sort: [scope.sort || 1],
-            discounts: discounts,
-            types: types,
-            brands: brands,
-         };
-      },
-      prepareFilterArray(scope) {
          // Prepare discounts array
          const discounts = scope.discounts.reduce((prev, curr, index) => {
             return (curr ? (prev.push(index + 1), prev): prev);
@@ -83,7 +81,16 @@ ecommerce.factory('helper', function() {
          const brands = scope.brands.reduce((prev, curr, index) => {
             return (curr ? (prev.push( scope.data.brands[index]._id ), prev): prev);
          }, []);
-         return {discounts, types, brands};
+
+         // Prepare and return data-object for Ajax query
+         return {
+            categoryId: scope.categoryId,
+            page: scope.curPage,
+            sort: [scope.sort || 1],
+            discounts: discounts,
+            types: types,
+            brands: brands,
+         };
       },
       changeDisabledButton(condition, scope) {
          scope.prevPageBtn = (condition ? 'disabled' : '');
