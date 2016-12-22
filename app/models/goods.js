@@ -79,16 +79,20 @@ module.exports = (mongoose, config) => {
          }
          return new Promise((resolve, reject) => {
             query.exec().then(goods => {
-              //const uniqSubcats = _.uniq(goods.map(e => e._subcategory._id));
-              //const values = category.subcategories.map(e => ({ title: e.title, url: e.url }));
 
-              const data = {
-                //subcategories: _.pick(_.zipObject(ids, values), uniqSubcats),
-                goods: goods
-              };
-              resolve(data);
+              resolve({ goods });
             }).catch(reject);
          });
+      },
+
+      /**
+       * Count goods by given criterion
+       */
+      countGoodsByCriterion(countGoodsByCriterion, subCatigoriesIds) {
+         const query = this
+            .aggregate([
+
+            ]);
       },
 
       /**
@@ -188,7 +192,7 @@ module.exports = (mongoose, config) => {
                                           else: {
                                              $cond: {
                                                 if: { $and: [{$lt: [ "$discount", 50 ]}, {$gte: [ "$discount", 40 ]}] }, // 40 <= X < 50
-                                                then: 4,
+                                                then: 2,
                                                 else: 5
                                              }
                                           }
@@ -208,7 +212,13 @@ module.exports = (mongoose, config) => {
                      $sum: 1
                   }
                }
-            }])
+            },
+            { $project: {
+              "count": 1,
+              "type": "$_id",
+              "_id": 0
+            }
+          }])
          .exec();
       }
    }

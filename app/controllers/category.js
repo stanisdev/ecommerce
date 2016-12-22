@@ -1,11 +1,6 @@
 'use strict';
 
 /**
- * Dependencies
- */
-const _ = require('lodash');
-
-/**
  * Routes
  */
 module.exports = function (app, express, mongoose, wrap, config) {
@@ -33,34 +28,43 @@ module.exports = function (app, express, mongoose, wrap, config) {
 
       const subcategoryKeys = currentCategory.subcategories.map(e => e._id);
       try {
-        var goods = await Goods.findGoodsBySubcategoryIds(page, options, subcategoryKeys, currentCategory);
-      } catch(e) {
+        var goods = await Goods.findGoodsBySubcategoryIds(page, options.length < 1 ? {sort: ["1"]} : options, subcategoryKeys, currentCategory);
+      } catch(err) {
         return res.json({message: "Error while searching goods"}); // @TODO server error page
       }
-      const goodsCount = await Goods.getCountOfGoodsBySubcategoryIds(subcategoryKeys);
 
       let subcats = currentCategory.subcategories;
       const subcatsGoodsCount = await Goods.getTotalCountGoodsBySubcategoryId(subcats.map(e => e._id));
-      console.log(subcategoryKeys);
-      const brands = await Goods.getAllBrandsBySubcategoryIds(subcategoryKeys);
-      const zzzzzzzzzzzz = await Goods.getAggregatedDiscountsCount(subcategoryKeys);
+      var goodsCount, brands, discountsCount;
 
+      await Promise.all([ // Parallel execution of queries
+        async function() {
+          discountsCount = await Goods.getAggregatedDiscountsCount(subcategoryKeys);
+        }(),
+        async function() {
+          brands = await Goods.getAllBrandsBySubcategoryIds(subcategoryKeys);
+        }(),
+        async function() {
+          goodsCount = await Goods.getCountOfGoodsBySubcategoryIds(subcategoryKeys);
+        }()
+      ]);
       // Prepare subcategory data
       subcats = subcats.map(e => {
          let goodsCount = subcatsGoodsCount.filter(s => ''+s._id == ''+e._id);
          let res = {_id: e._id, title: e.title, url: e.url, goodsCount: goodsCount[0].goodsCount};
          return res;
       });
-
       const data = Object.assign({
         category: { _id: currentCategory._id, title: currentCategory.title, url: currentCategory.url }
       }, goods);
       data.subcategories = subcats;
       data.goodsTotalCount = goodsCount;
       data.brands = brands;
+      data.discountsCount = discountsCount;
+      data.page = page + 1;
 
       // Check data on correct values
-      if (!data || !_.isObject(data) || Object.keys(data).length < 1 || data.goods.length < 1) {
+      if (!data || !(data instanceof Object) || Object.keys(data).length < 1 || data.goods.length < 1) {
          return res.render('main/404');
       }
       res.render('category/allGoods', {data});

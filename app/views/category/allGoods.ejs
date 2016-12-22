@@ -64,7 +64,10 @@
 	                        <div class="clearfix"></div>
 	                     </div>
 	                     <div class="mid-2">
-	                        <p><label>$100.00</label><em class="item_price">{{goodsItem.price | currency}}</em></p>
+	                        <p>
+														<label ng-if="goodsItem.discount > 0">{{goodsItem.price | currency}}</label>
+														<em class="item_price">{{ goodsItem.price - (goodsItem.price * goodsItem.discount) / 100 | currency}}</em>
+													</p>
 	                        <div class="block">
 	                           <div class="starbox small ghosting">
 	                              <div class="positioner">
@@ -168,13 +171,13 @@
 	            <h4 class="cate">Discounts</h4>
 	            <div class="row row1 scroll-pane">
 	               <div class="col col-4">
-	                  <label class="checkbox"><input ng-model="_.discounts[0]" type="checkbox" name="checkbox"><i></i>Upto - 10% (20)</label>
+	                  <label class="checkbox"><input ng-model="_.discounts_v0" type="checkbox" name="checkbox"><i></i>Upto - 10% ({{ _.getDiscountsCountByType(1) }})</label>
 	               </div>
 	               <div class="col col-4">
-	                  <label class="checkbox"><input ng-model="_.discounts[1]" type="checkbox" name="checkbox"><i></i>40% - 50% (5)</label>
-	                  <label class="checkbox"><input ng-model="_.discounts[2]" type="checkbox" name="checkbox"><i></i>30% - 20% (7)</label>
-	                  <label class="checkbox"><input ng-model="_.discounts[3]" type="checkbox" name="checkbox"><i></i>20% - 10% (2)</label>
-	                  <label class="checkbox"><input ng-model="_.discounts[4]" type="checkbox" name="checkbox"><i></i>Other(50)</label>
+	                  <label class="checkbox"><input ng-model="_.discounts_v1" type="checkbox" name="checkbox"><i></i>40% - 50% ({{ _.getDiscountsCountByType(2) }})</label>
+	                  <label class="checkbox"><input ng-model="_.discounts_v2" type="checkbox" name="checkbox"><i></i>30% - 20% ({{ _.getDiscountsCountByType(3) }})</label>
+	                  <label class="checkbox"><input ng-model="_.discounts_v3" type="checkbox" name="checkbox"><i></i>20% - 10% ({{ _.getDiscountsCountByType(4) }})</label>
+	                  <label class="checkbox"><input ng-model="_.discounts_v4" type="checkbox" name="checkbox"><i></i>Other({{ _.getDiscountsCountByType(5) }})</label>
 	               </div>
 	            </div>
 	         </section>

@@ -4,15 +4,32 @@ const ecommerce = angular.module('ecommerceApp', []);
  * Goods controller constructor
  */
 ecommerce.controller('GoodsCtrl', function GoodsController(helper, ajax) {
-   const data = JSON.parse(angular.element(_goodsData).val()); // http://jsonformatter.org/741ac8
-   console.log(angular.element(_goodsData).val());
+   const data = JSON.parse(angular.element(_goodsData).val()); // http://jsonformatter.org/3eb1fe
    this.data = data;
    this.categoryId = data.category._id;
    this.sort = '1';
-   this.discounts = Array(5).fill(false);
+   this._discounts = Array(5).fill(false);
    this.types = Array( data.subcategories.length ).fill(false);
    this.brands = Array( data.brands.length ).fill(false);
+   this.curPage = data.page;
 
+   {// closure
+      var hidden = Array(5).fill(false);
+      for (var i = 0; i < 5; i++) {
+         (i => {
+            Object.defineProperty(this, "discounts_v" + i, {
+               set: function(value) {
+                  this._discounts[i] = value;
+                  hidden[i] = value;
+                  ajax.getPage(this);
+               },
+               get: function() {
+                  return hidden[i];
+               }
+            });
+         })(i);
+      }
+   }
    if (data.goodsTotalCount > 3) {
       helper.paginationPrepare(this);
    }
@@ -42,7 +59,13 @@ ecommerce.controller('GoodsCtrl', function GoodsController(helper, ajax) {
       return subcategory[0] instanceof Object && "title" in subcategory[0] ? subcategory[0].title : "";
    };
 
-   console.log( data );
+   /**
+    * Get discounts count by type
+    */
+   this.getDiscountsCountByType = (type) => {
+      var foundDiscount = this.data.discountsCount.filter(d => d.type == +type);
+      return foundDiscount.length > 0 && foundDiscount[0] instanceof Object && !isNaN(foundDiscount[0].count) ? foundDiscount[0].count : 0;
+   };
 });
 
 /**
@@ -53,9 +76,8 @@ ecommerce.factory('helper', function() {
       paginationPrepare(scope) {
          const goodsCount = scope.data.goodsTotalCount;
 
-         scope.curPage = 1;
          scope.maxPage = Math.ceil(goodsCount / 3);
-         this.changeDisabledButton(true, scope);
+         this.paginationSlide(scope);
       },
       paginationSlide(scope) {
 
@@ -68,7 +90,7 @@ ecommerce.factory('helper', function() {
       },
       getDataObject(scope) {
          // Prepare discounts array
-         const discounts = scope.discounts.reduce((prev, curr, index) => {
+         const discounts = scope._discounts.reduce((prev, curr, index) => {
             return (curr ? (prev.push(index + 1), prev): prev);
          }, []);
 

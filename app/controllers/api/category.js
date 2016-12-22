@@ -27,10 +27,12 @@ module.exports = function (app, express, mongoose, wrap, config) {
         const category = await mongoose.model('Category').findAllSubcategoriesByCategoryId(params.categoryId);
         subcats.push(...category.subcategories.map(e => e._id));
      }
+     var Goods = mongoose.model('Goods');
 
      // Get goods by subcategories and filters
      const options = {sort: params.sort, discounts: params.discounts, brands: params.brands};
-     const goods = await mongoose.model('Goods').findGoodsBySubcategoryIds(params.page - 1, options, subcats, null, true);
+     const goods = await Goods.findGoodsBySubcategoryIds(params.page - 1, options, subcats, null, true);
+     //const goodsCount = await Goods.countGoodsByCriterion(options, subcats);
      res.json(goods);
   }));
 
