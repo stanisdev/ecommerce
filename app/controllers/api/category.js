@@ -32,8 +32,9 @@ module.exports = function (app, express, mongoose, wrap, config) {
      // Get goods by subcategories and filters
      const options = {sort: params.sort, discounts: params.discounts, brands: params.brands};
      const goods = await Goods.findGoodsBySubcategoryIds(params.page - 1, options, subcats, null, true);
-     //const goodsCount = await Goods.countGoodsByCriterion(options, subcats);
-     res.json(goods);
+     const goodsCount = await Goods.countGoodsByCriterion(options, subcats);
+     const count = goodsCount.length > 0 ? goodsCount[0].goodsCount : 0;
+     res.json({goods, count});
   }));
 
   app.use('/api/category', router);

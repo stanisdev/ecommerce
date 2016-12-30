@@ -7,32 +7,45 @@ ecommerce.controller('GoodsCtrl', function GoodsController(helper, ajax) {
    const data = JSON.parse(angular.element(_goodsData).val()); // http://jsonformatter.org/3eb1fe
    this.data = data;
    this.categoryId = data.category._id;
-   this.sort = '1';
-   this._discounts = Array(5).fill(false);
-   this.types = Array( data.subcategories.length ).fill(false);
-   this.brands = Array( data.brands.length ).fill(false);
    this.curPage = data.page;
+   this.discounts = [];
+   this.types = [];
+   this.brands = [];
 
-   {// closure
-      var hidden = Array(5).fill(false);
-      for (var i = 0; i < 5; i++) {
-         (i => {
-            Object.defineProperty(this, "discounts_v" + i, {
-               set: function(value) {
-                  this._discounts[i] = value;
-                  hidden[i] = value;
-                  ajax.getPage(this);
-               },
-               get: function() {
-                  return hidden[i];
-               }
-            });
-         })(i);
-      }
+   var sort = +data.sort;
+   this.sort = Number.isInteger(sort) && sort < 7 && sort > 0 ? sort.toString() : "1";
+   var self = this;
+
+   var entities = [5, data.subcategories.length, data.brands.length];
+   var elements = ["discounts", "types", "brands"];
+   {
+      var hidden = [];
+      entities.forEach((entity, index) => {
+         hidden[index] = Array(entities[index]).fill(false); // Fill hidden by default values
+         for (let i = 0; i < entities[index]; i++) {
+            (i => {
+               Object.defineProperty(this[elements[index]], i, {
+                  set(value) {
+                     hidden[index][i] = value;
+                     self.loadData();
+                  },
+                  get() {
+                     return hidden[index][i];
+                  }
+               });
+            })(i);
+         }
+      });
    }
+
    if (data.goodsTotalCount > 3) {
       helper.paginationPrepare(this);
    }
+
+   this.loadData = () => {
+      this.curPage = 1;
+      ajax.getPage(this);
+   };
 
    /**
     * Pagination prev page click
@@ -90,7 +103,7 @@ ecommerce.factory('helper', function() {
       },
       getDataObject(scope) {
          // Prepare discounts array
-         const discounts = scope._discounts.reduce((prev, curr, index) => {
+         const discounts = scope.discounts.reduce((prev, curr, index) => {
             return (curr ? (prev.push(index + 1), prev): prev);
          }, []);
 
@@ -132,10 +145,14 @@ ecommerce.factory('ajax', function($http, helper) {
 
          $http
             .post('/api/category/getGoods', data)
-            .then((response) => {
-               scope.data.goods = response.data;
+            .then(response => {
+               scope.data.goods = response.data.goods;
+               scope.data.goodsTotalCount = response.data.count;
+               if (response.data.count < 4) {
+                  scope.curPage = 1;
+               }
             })
-            .catch((err) => {});
+            .catch(err => {});
       }
    };
 });

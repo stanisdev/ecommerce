@@ -88,11 +88,32 @@ module.exports = (mongoose, config) => {
       /**
        * Count goods by given criterion
        */
-      countGoodsByCriterion(countGoodsByCriterion, subCatigoriesIds) {
-         const query = this
-            .aggregate([
+      countGoodsByCriterion(options, subCatigoriesIds) {
+         var conditions = {$and: []};
+         delete options.sort;
 
-            ]);
+         serviceCategory.setOptionsParam(conditions, options, true);
+         let match = {
+            enabled: true,
+            _subcategory: { $in: subCatigoriesIds.map(e => mongoose.Types.ObjectId(e)) },
+         };
+         if (conditions.$and.length > 0) { // Determine necessary to add additional conditions
+            match.$and = conditions.$and;
+         }
+         return this
+            .aggregate([
+               { $match: match },
+               { $group: {
+                     _id: null,
+                     goodsCount: { $sum: 1 }
+                  }
+               },
+               { $project: {
+                     _id: 0,
+                     goodsCount: 1
+                  }
+               }
+            ]).exec();
       },
 
       /**

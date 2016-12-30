@@ -30,7 +30,7 @@ const filters = {
    /**
     * Filter by discounts
     */
-   discounts() {
+   discounts(plain) {
       const discounts = _.uniq(this.option);
       const allowed = [1,2,3,4,5];
 
@@ -56,17 +56,24 @@ const filters = {
             : cond
          or.$or.push(cond);
       });
+      if (plain === true) {
+         return this.query.$and.push(or);
+      }
       this.query.where(or);
    },
    /**
     * Brands filter
     */
-   brands() {
+   brands(plain) {
       const brands = this.option;
       if (brands.length < 1) {
          return;
       }
-      this.query.where({brands: {$in: brands}});
+      const condition = {brands: {$in: brands}};
+      if (plain === true) {
+         return this.query.$and.push( {$or: [condition]} );
+      }
+      this.query.where(condition);
    }
 };
 
@@ -90,11 +97,23 @@ module.exports.disassemleUrlOptions = (options) => {
 /**
  * Get object for mongoose query where-clause
  */
-module.exports.setOptionsParam = (query, options) => {
-   for (let option in options) {
+module.exports.setOptionsParam = (query, options, plain) => {
+   for (let option in options) { // option => "sort", "discounts", "brands"
       if (!filters.hasOwnProperty(option)) {
          continue;
       }
-      filters[option].call( {option: options[option], query: query} );
+      let obj = {option: options[option], query: query};
+      if (plain === true) {
+         filters[option].call(obj, true);
+         continue;
+      }
+      filters[option].call(obj);
    }
+};
+
+/**
+ * Get options property if exists or return null value
+ */
+module.exports.getOptionsProperty = (options, property) => {
+   return options.hasOwnProperty(property) && Array.isArray(options[property]) && options[property].length > 0 ? options[property][0] : null
 };

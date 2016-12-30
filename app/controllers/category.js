@@ -26,7 +26,10 @@ module.exports = function (app, express, mongoose, wrap, config) {
          return res.render('main/404');
       }
 
-      const subcategoryKeys = currentCategory.subcategories.map(e => e._id);
+      var subcategoryKeys = subcategoryKeys = currentCategory.subcategories.map(e => e._id); // Filter subcategories
+      if (options.hasOwnProperty("types") && Array.isArray(options.types)) {
+         subcategoryKeys = subcategoryKeys.filter((e, index) => options.types.indexOf(index) > -1);
+      }
       try {
         var goods = await Goods.findGoodsBySubcategoryIds(page, options.length < 1 ? {sort: ["1"]} : options, subcategoryKeys, currentCategory);
       } catch(err) {
@@ -62,6 +65,7 @@ module.exports = function (app, express, mongoose, wrap, config) {
       data.brands = brands;
       data.discountsCount = discountsCount;
       data.page = page + 1;
+      data.sort = serviceCategory.getOptionsProperty(options, "sort");
 
       // Check data on correct values
       if (!data || !(data instanceof Object) || Object.keys(data).length < 1 || data.goods.length < 1) {
@@ -72,3 +76,5 @@ module.exports = function (app, express, mongoose, wrap, config) {
 
    app.use('/category/:categoryName', router);
 };
+
+// http://localhost:5001/category/mens/page/1/options/sort:[2],discnt:[1,3],types:[1],brnds:[1,2]
