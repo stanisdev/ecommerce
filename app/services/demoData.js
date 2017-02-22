@@ -1,3 +1,6 @@
+var randomString = require("randomstring");
+var bcrypt = require('bcrypt');
+
 module.exports = (mongoose, wrap) => {
 
   wrap(async function() {
@@ -7,6 +10,7 @@ module.exports = (mongoose, wrap) => {
     const Category = mongoose.model('Category');
     const Subcategory = mongoose.model('Subcategory');
     const Goods = mongoose.model('Goods');
+    const Administrator = mongoose.model('Administrator');
 
     /**
     * Men Categoty
@@ -132,6 +136,14 @@ module.exports = (mongoose, wrap) => {
     // Save jeans in subcategory
     jeans.goods.push(womenJeans);
     await jeans.save();
+
+    const salt = randomString.generate(30);
+    const admin = new Administrator({
+      username: "administrator",
+      password: bcrypt.hashSync("123" + salt, bcrypt.genSaltSync(10)),
+      salt: salt
+   });
+   await admin.save();
 
     console.log('SUCCESS');
     process.exit();

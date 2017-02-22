@@ -18,5 +18,10 @@ module.exports = {
    env: process.env.NODE_ENV || 'development',
    goods: {
      per_page: 3
+   },
+   redis: {
+      secret: "SUPER-SECRET-KEY",
+      host: "localhost",
+      port: 6379
    }
 };
