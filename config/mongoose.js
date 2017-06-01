@@ -7,7 +7,7 @@ module.exports = (config) => {
     var mongoose = require('mongoose');
     mongoose.Promise = Promise;
     mongoose.connect(`mongodb://${config.mongo.host}:${config.mongo.port}/${config.mongo.db}`);
-    //mongoose.set('debug', true);
+   //  mongoose.set('debug', true);
 
     const db = mongoose.connection;
     db.on('error', reject);

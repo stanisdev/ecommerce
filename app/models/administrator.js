@@ -22,7 +22,15 @@ module.exports = (mongoose) => {
    });
 
    // Static methods
-   administratorSchema.statics = {};
+   administratorSchema.statics = {
+
+      /**
+       * Generate bcrypt hash
+       */
+      generateBcryptHash(password, salt) {
+         return bcrypt.hashSync(password + salt, bcrypt.genSaltSync(10));
+      }
+   };
 
    // Instance methods
    administratorSchema.methods = {

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <meta charset="utf-8">
+      <title>TITLE</title>
+      <link rel="stylesheet" href="/css/bootstrap.sandstone.min.css" media="screen">
+      <%- block('head').toString() %>
+   </head>
+   <body>
+
+     <div class="navbar navbar-default navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <a href="../" class="navbar-brand">Ecommerce</a>
+          <button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#navbar-main">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+        </div>
+        <div class="navbar-collapse collapse" id="navbar-main">
+          <ul class="nav navbar-nav">
+            <li>
+              <a href="../help/">Help</a>
+            </li>
+            <li>
+              <a href="http://news.bootswatch.com">Blog</a>
+            </li>
+          </ul>
+
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="/administrator/profile">Profile</a></li>
+            <li><a href="/administrator/logout">Logout</a></li>
+          </ul>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <div style="margin-top: 100px;">
+
+         <% var data = getFlashMessage(); %>
+         <% if (data.message.length > 0) { %>
+            <div class="alert alert-dismissible alert-<%= data.type %>">
+              <button type="button" class="close" data-dismiss="alert">&times;</button>
+              <%= data.message %>
+            </div>
+         <% } %>
+
+        <%- body -%>
+      </div>
+    </div>
+
+   </body>
+</html>
