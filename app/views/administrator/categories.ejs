@@ -1,0 +1,57 @@
+<% layout('/layouts/administrator/main') -%>
+
+<h3>Categories</h3>
+
+<style media="screen">
+   .cp {
+      cursor: pointer;
+   }
+</style>
+
+<br/>
+<table class="table">
+  <thead>
+    <tr>
+      <th style="width: 50%">List</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+
+     <% for(var i=0; i<categories.length; i++) {%>
+
+       <tr data-subcats-count="<%= categories[i].subcatsCount %>" data-id="<%= categories[i]._id %>" class="currentRow<% if (i == 0) { %> info <% } %>">
+         <td class="cp"><%= categories[i].title %></td>
+         <% if (i == 0) { %>
+            <td style="background-color: #fff;" rowspan="<%= categories.length -1 %>">
+               <div style="position: absolute">
+                  <p>Total count: <strong><%= totalAmount %></strong></p>
+                  <p>Selected: <strong><span id="categoryTitle"><% if (i == 0) { %><%= categories[i].title %><% } %></span></strong></p>
+                  <p>Subcategories: <strong><span id="subcatsCount"><% if (i == 0) { %><%= categories[i].subcatsCount %><% } %></span></strong></p>
+                  <p>Id: <span id="id-category"><% if (i == 0) { %><%= categories[i]._id %><% } %></span></p>
+                  <a href="#" class="btn btn-info">Edit</a>
+                  <a href="#" class="btn btn-danger">Remove</a>
+                  <a href="/administrator/categories/new" class="btn btn-primary">Add new</a>
+               </div>
+            </td>
+         <% } %>
+       </tr>
+     <% } %>
+
+  </tbody>
+</table>
+
+<script>
+   var data = {};
+   $(document).ready(() => {
+      $("tr.currentRow").on("click", (e) => {
+         const category = $(e.target);
+
+         $("#id-category").text(category.parent().attr("data-id"));
+         $("#categoryTitle").text(category.text());
+         $("#subcatsCount").text(category.parent().attr("data-subcats-count"));
+         $("tr.currentRow").removeClass("info");
+         category.parent().addClass("info");
+      });
+   });
+</script>

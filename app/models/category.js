@@ -7,12 +7,20 @@ module.exports = (mongoose) => {
       title: {
          type: String,
          required: true,
-         unique: true
+         unique: true,
+         trim: true,
+         lowercase: true,
+         minlength: 3,
+         maxlength: 30
       },
       url: {
          type: String,
          required: true,
-         unique: true
+         unique: true,
+         trim: true,
+         lowercase: true,
+         minlength: 3,
+         maxlength: 50
       },
       subcategories: [{
          type: mongoose.Schema.ObjectId,
@@ -41,7 +49,7 @@ module.exports = (mongoose) => {
             .select('title url subcategories')
             .exec();
       },
-      
+
       /**
        * Find category containing subcategory-id inside subcategories-array
        */

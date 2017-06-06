@@ -6,6 +6,7 @@ const randomString = require("randomstring");
 module.exports = function (app, express, mongoose, wrap, config, passport) {
 
    var router = express.Router();
+   const serviceOther = require(config.app_dir + '/services/other');
 
    /**
     * Login form
@@ -77,6 +78,41 @@ module.exports = function (app, express, mongoose, wrap, config, passport) {
          salt: salt
       }).save();
       end("success", "Password has been saved");
+   }));
+
+   /**
+    * List of categories
+    */
+   router.get('/categories', passport.authMiddleware, wrap(async function(req, res) {
+      let categories = await mongoose.model("Category")
+         .find({})
+         .select("_id title url enabled")
+         .exec();
+      const totalAmount = await mongoose.model("Category").count().exec();
+      categories = await Promise.all(categories.map(async (category) => {
+         category.subcatsCount = await mongoose.model("Subcategory").count({ _category: category.id }).exec();
+         return category;
+      }));
+      res.render('administrator/categories', {categories, totalAmount});
+   }));
+
+   /**
+    * New category (GET)
+    */
+   router.get('/categories/new', passport.authMiddleware, wrap(async function(req, res) {
+      res.render('administrator/category-form', {});
+   }));
+
+   /**
+    * New category (GET)
+    */
+   router.post('/categories/new', passport.authMiddleware, wrap(async function(req, res) {
+      const category = new (mongoose.model("Category"))(req.body);
+      try {
+         await category.save();
+      } catch (output) {
+         res.render('administrator/category-form', { errors: serviceOther.validationErrorsPrepare(output) });
+      }
    }));
 
    app.use('/administrator', router);

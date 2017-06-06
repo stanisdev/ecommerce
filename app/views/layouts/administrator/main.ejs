@@ -4,6 +4,8 @@
       <meta charset="utf-8">
       <title>TITLE</title>
       <link rel="stylesheet" href="/css/bootstrap.sandstone.min.css" media="screen">
+      <script src="/js/jquery.min.js"></script>
+      <script src="/js/bootstrap.min.js"></script>
       <%- block('head').toString() %>
    </head>
    <body>
@@ -20,8 +22,15 @@
         </div>
         <div class="navbar-collapse collapse" id="navbar-main">
           <ul class="nav navbar-nav">
-            <li>
-              <a href="../help/">Help</a>
+            <li class="dropdown">
+              <a class="dropdown-toggle" data-toggle="dropdown" href="#" id="themes" aria-expanded="false">Entities <span class="caret"></span></a>
+              <ul class="dropdown-menu" aria-labelledby="themes">
+                <li><a href="/administrator/categories">Categories</a></li>
+                <li><a href="/administrator/subcategories">Subcategories</a></li>
+                <li><a href="/administrator/goods">Goods</a></li>
+                <li class="divider"></li>
+                <li><a href="../yeti/">Other</a></li>
+              </ul>
             </li>
             <li>
               <a href="http://news.bootswatch.com">Blog</a>
