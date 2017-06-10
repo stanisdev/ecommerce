@@ -2,19 +2,31 @@
 
 <h3>Adding category</h3>
 
+<style>
+   .err {
+      color: red;
+   }
+</style>
+
 <br>
 <form class="form-horizontal" method="post" action="">
   <fieldset>
     <div class="form-group">
       <label for="inputTitle" class="col-lg-2 control-label">Title</label>
       <div class="col-lg-10">
-        <input name="title" type="text" class="form-control" id="inputTitle" placeholder="Title">
+        <input name="title" value="<% if (data.title) { %><%= data.title %><% } %>" type="text" class="form-control" id="inputTitle" placeholder="Title">
+        <% for (var a = 0; errors.length > a; a++ ) { %>
+           <% if (errors[a].title) { %> <span class="err"><%= errors[a].title %></span> <% } %>
+        <% } %>
       </div>
     </div>
     <div class="form-group">
       <label for="inputUrl" class="col-lg-2 control-label">Url</label>
       <div class="col-lg-10">
-        <input name="url" type="text" class="form-control" id="inputUrl" placeholder="Url">
+        <input name="url" value="<% if (data.url) { %><%= data.url %><% } %>" type="text" class="form-control" id="inputUrl" placeholder="Url">
+        <% for (var a = 0; errors.length > a; a++ ) { %>
+           <% if (errors[a].url) { %> <span class="err"><%= errors[a].url %></span> <% } %>
+        <% } %>
         <div class="checkbox">
           <label>
             <input name="enabled" type="checkbox"> Enabled

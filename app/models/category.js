@@ -10,8 +10,8 @@ module.exports = (mongoose) => {
          unique: true,
          trim: true,
          lowercase: true,
-         minlength: 3,
-         maxlength: 30
+         minlength: [3, "Title length too short"],
+         maxlength: [30, "Title length too long"]
       },
       url: {
          type: String,
@@ -19,8 +19,8 @@ module.exports = (mongoose) => {
          unique: true,
          trim: true,
          lowercase: true,
-         minlength: 3,
-         maxlength: 50
+         minlength: [3, "Url length too long"],
+         maxlength: [50, "Url length too long"]
       },
       subcategories: [{
          type: mongoose.Schema.ObjectId,

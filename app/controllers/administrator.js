@@ -2,118 +2,173 @@
 
 const _ = require('lodash');
 const randomString = require("randomstring");
+const path = require('path');
 
-module.exports = function (app, express, mongoose, wrap, config, passport) {
+let dirs = __dirname.split("/");
+dirs.pop();
+const servicesDir = dirs.join("/") + "/services";
+const BaseRouter = require(servicesDir + "/baseRouter");
 
-   var router = express.Router();
-   const serviceOther = require(config.app_dir + '/services/other');
-
-   /**
-    * Login form
-    */
-   router.get('/login', wrap(async function(req, res) {
-      if (req.isAuthenticated()) {
-         return res.redirect('/administrator');
-      }
-      res.render('administrator/login', {passportMessage: req.session.passportMessage.value});
-   }));
-
-   /**
-    * Login (post)
-    */
-   router.post('/login', passport.authenticate('local', {
-      successRedirect: '/administrator',
-      failureRedirect: '/administrator/login'
-   }));
+/**
+ * Admin class
+ */
+class Administrator extends BaseRouter {
+   constructor() {
+      super();
+      this.build.apply(this, arguments);
+      this.services.other = require(this.config.app_dir + '/services/other');
+   }
 
    /**
-    * Logout page
+    * Get list of all admin handlers
     */
-   router.get('/logout', function(req, res){
-      req.logout();
-      res.redirect('/administrator/login');
-   });
+   getMethods() {
+      const passport = this.passport;
+      const auth = passport.authMiddleware;
+      return [
+         { name: "main", url: "", filters: [auth] },
+         { name: "login", url: "login" },
+         { name: "loginPost", url: "login", filters: [passport.authenticate('local', {
+                  successRedirect: '/administrator',
+                  failureRedirect: '/administrator/login'
+               })
+            ]
+         },
+         { name: "logout", url: "logout", filters: [auth] },
+         { name: "profile", url: "profile", filters: [auth] },
+         { name: "profileSavePost", url: "profile/save", filters: [auth] },
+         { name: "categories", url: "categories", filters: [auth] },
+         { name: "categoryNew", url: "categories/new", filters: [auth] },
+         { name: "categoryNewPost", url: "categories/new", filters: [auth] },
+         { name: "categoryRemove", url: "category/:id/remove", filters: [auth] }
+      ];
+   }
 
    /**
     * Main admin page
     */
-   router.get('/', passport.authMiddleware, wrap(async function(req, res) {
-      res.render('administrator/index', {});
-   }));
+   main() {
+      this.render('index', {});
+   }
+
+   /**
+    * Login form
+    */
+   login() {
+      if (this.req.isAuthenticated()) {
+         return this.redirect('/');
+      }
+      this.render('login', { passportMessage: this.req.session.passportMessage.value });
+   }
+
+   /**
+    * Login (post)
+    */
+   loginPost() {}
+
+   /**
+    * Logout page
+    */
+   logout() {
+      this.req.logout();
+      this.redirect('/login');
+   }
 
    /**
     * Profile
     */
-   router.get('/profile', passport.authMiddleware, wrap(async function(req, res) {
-      res.render('administrator/profile', {});
-   }));
+   profile() {
+      this.render('profile', {});
+   }
 
    /**
-    * Profile
+    * Profile save (POST)
     */
-   router.post('/profile/save', passport.authMiddleware, wrap(async function(req, res) {
+    async profileSavePost() {
       const fields = ["currentPassword", "newPassword", "confirmPassword"];
-      const emptyFields = fields.filter(e => typeof req.body[e] != "string" || req.body[e].length < 1);
-      const end = (type, messages) => {
-         req.flash(type, messages);
-         res.redirect("/administrator/profile");
+      const emptyFields = fields.filter(e => typeof this.body[e] != "string" || this.body[e].length < 1);
+      const end = (type, message) => {
+         this.redirect("/profile", {flash: {type, message}});
       };
 
-      if (_.difference(fields, Object.keys(req.body)).length > 0 || emptyFields.length > 0) {
+      if (_.difference(fields, Object.keys(this.body)).length > 0 || emptyFields.length > 0) {
          return end("danger", "Following fields are empty: " + emptyFields.join(", "));
       }
-      if (req.body.newPassword !== req.body.confirmPassword) {
+      if (this.body.newPassword !== this.body.confirmPassword) {
          return end("danger", "New password and its confirm does not equal");
       }
-      const admin = await mongoose.model("Administrator").findOne({ _id: req.user.id }).select("id password salt").exec();
+      const admin = await this.model("Administrator").findOne({ _id: this.user.id }).select("id password salt").exec();
       if (!(admin instanceof Object)) {
          return end("danger", "Password cannot be updated");
       }
-      if (!admin.isPasswordValid(req.body.currentPassword)) {
+      if (!admin.isPasswordValid(this.body.currentPassword)) {
          return end("danger", "Entered invalid current password");
       }
       const salt = randomString.generate(30);
       await admin.set({
-         password: mongoose.model("Administrator").generateBcryptHash(req.body.newPassword, salt),
+         password: this.model("Administrator").generateBcryptHash(this.body.newPassword, salt),
          salt: salt
       }).save();
       end("success", "Password has been saved");
-   }));
+   }
 
    /**
     * List of categories
     */
-   router.get('/categories', passport.authMiddleware, wrap(async function(req, res) {
-      let categories = await mongoose.model("Category")
+   async categories() {
+      let categories = await this.model("Category")
          .find({})
          .select("_id title url enabled")
          .exec();
-      const totalAmount = await mongoose.model("Category").count().exec();
+      const totalAmount = await this.model("Category").count().exec();
       categories = await Promise.all(categories.map(async (category) => {
-         category.subcatsCount = await mongoose.model("Subcategory").count({ _category: category.id }).exec();
+         category.subcatsCount = await this.model("Subcategory").count({ _category: category.id }).exec();
          return category;
       }));
-      res.render('administrator/categories', {categories, totalAmount});
-   }));
+      const firstCategoryId = Array.isArray(categories) && categories.length > 0 ? categories[0]._id : null;
+      this.render('categories', {categories, totalAmount, firstCategoryId});
+   }
 
    /**
-    * New category (GET)
+    * New category
     */
-   router.get('/categories/new', passport.authMiddleware, wrap(async function(req, res) {
-      res.render('administrator/category-form', {});
-   }));
+   categoryNew() {
+      this.render('category-form', {data: {}, errors: []});
+   }
 
    /**
-    * New category (GET)
+    * New category (POST)
     */
-   router.post('/categories/new', passport.authMiddleware, wrap(async function(req, res) {
-      const category = new (mongoose.model("Category"))(req.body);
+   async categoryNewPost() {
+      const category = new (this.model("Category"))(this.body);
       try {
          await category.save();
+         this.redirect("/categories", {flash: {type: "success", message: "Category added"}});
       } catch (output) {
-         res.render('administrator/category-form', { errors: serviceOther.validationErrorsPrepare(output) });
+         this.render('category-form', {
+            errors: this.services.other.validationErrorsPrepare(output),
+            data: this.body
+         });
       }
-   }));
+   }
 
-   app.use('/administrator', router);
+   /**
+    * Remove category
+    */
+   async categoryRemove() {
+      const id = this.req.params.id;
+      if (typeof id != "string" || id.length < 1) {
+         return this.redirect("/categories", {flash: {type: "danger", message: "Id of category is incorrect"}});
+      }
+      const category = await this.model("Category").findOne({ _id: id }).exec();
+      if (!(category instanceof Object)) {
+         return this.redirect("/categories", {flash: {type: "danger", message: "Category not found"}});
+      }
+      await this.model("Category").remove({ _id: category.id }).exec();
+      return this.redirect("/categories", {flash: {type: "success", message: "Category was removed"}});
+   }
+}
+
+module.exports = function (app, express, mongoose, wrap, config, passport) {
+   new Administrator(app, express, mongoose, wrap, config, passport, "/administrator");
 };

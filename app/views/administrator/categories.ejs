@@ -30,7 +30,7 @@
                   <p>Subcategories: <strong><span id="subcatsCount"><% if (i == 0) { %><%= categories[i].subcatsCount %><% } %></span></strong></p>
                   <p>Id: <span id="id-category"><% if (i == 0) { %><%= categories[i]._id %><% } %></span></p>
                   <a href="#" class="btn btn-info">Edit</a>
-                  <a href="#" class="btn btn-danger">Remove</a>
+                  <a href="#" id="removeCategory" class="btn btn-danger">Remove</a>
                   <a href="/administrator/categories/new" class="btn btn-primary">Add new</a>
                </div>
             </td>
@@ -41,9 +41,21 @@
   </tbody>
 </table>
 
+<input type="hidden" id="firstCategoryId" value="<% if (firstCategoryId) { %><%= firstCategoryId %><% } %>">
 <script>
    var data = {};
    $(document).ready(() => {
+
+      var selectedCategoryId;
+      var firstCategoryId = $("#firstCategoryId").attr("value");
+
+      if (typeof firstCategoryId == "string" && firstCategoryId.length > 0) {
+         selectedCategoryId = firstCategoryId;
+      }
+
+      /**
+       * Select category from list
+       */
       $("tr.currentRow").on("click", (e) => {
          const category = $(e.target);
 
@@ -51,7 +63,21 @@
          $("#categoryTitle").text(category.text());
          $("#subcatsCount").text(category.parent().attr("data-subcats-count"));
          $("tr.currentRow").removeClass("info");
+         selectedCategoryId = category.parent().attr("data-id");
          category.parent().addClass("info");
+      });
+
+      /**
+       * Remove category
+       */
+      $("#removeCategory").on("click", (e) => {
+         if (typeof selectedCategoryId != "string") {
+            return;
+         }
+         let categoryTitle = $(`tr[data-id=${selectedCategoryId}] > td`).text();
+         if (window.confirm(`Do you really want to remove category "${categoryTitle}"?`)) {
+            window.location = "/administrator/category/" + selectedCategoryId + "/remove";
+         }
       });
    });
 </script>
