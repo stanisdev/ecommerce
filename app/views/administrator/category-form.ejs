@@ -32,10 +32,16 @@
             <input name="enabled" type="checkbox"> Enabled
           </label>
         </div>
+        <br><br>
+        <div class="">
+          <img id="picture-preview" src="" alt="">
+          <br><br>
+          <button id="upload-picture" type="button" class="btn btn-primary">Upload Picture</button>
+        </div>
       </div>
     </div>
 
-
+    <hr>
     <div class="form-group">
       <div class="col-lg-10 col-lg-offset-2">
         <button type="reset" class="btn btn-default">Cancel</button>
@@ -43,4 +49,49 @@
       </div>
     </div>
   </fieldset>
+  <input type="hidden" name="image" value="">
+  <input type="hidden" name="image-extension" value="">
 </form>
+
+<div style="display: none;">
+  <form action="/administrator/upload-picture" method="POST" enctype="multipart/form-data" id="upload-picture-form">
+    <input type="file" id="upload-picture-file" name="image" />
+  </form>
+</div>
+
+<script>
+  $(document).ready(() => {
+
+    $("#upload-picture").on("click", () => {
+      $("#upload-picture-file").trigger("click");
+    });
+
+    $("#upload-picture-file").change((e) => {
+      if ($(e.target).val().length > 0) {
+        var form = new FormData();
+        form.append("image", $(e.target).prop("files")[0]);
+        $.ajax({
+          url: $("#upload-picture-form").attr("action"),
+          data: form,
+          type: "POST",
+          dataType: "json",
+          cache: false,
+          contentType: false,
+          processData: false
+       }).success(function(result) {
+          if (!(result instanceof Object) || result.success !== true) {
+             return alert(
+                typeof result.message ? result.message : "Unknown error"
+             );
+          }
+          const path = "/images/categories/" + result.filename;
+          $("#picture-preview").attr("src", path);
+          $("input[type=hidden][name=image]").val(result.filename);
+          $("input[type=hidden][name=image-extension]").val(result.extension);
+       }).error(function() {
+          alert("Error while uploading");
+       });
+      }
+    });
+  });
+</script>

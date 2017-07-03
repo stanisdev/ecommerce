@@ -9,7 +9,6 @@ module.exports = (mongoose) => {
          required: true,
          unique: true,
          trim: true,
-         lowercase: true,
          minlength: [3, "Title length too short"],
          maxlength: [30, "Title length too long"]
       },
@@ -20,7 +19,15 @@ module.exports = (mongoose) => {
          trim: true,
          lowercase: true,
          minlength: [3, "Url length too long"],
-         maxlength: [50, "Url length too long"]
+         maxlength: [50, "Url length too long"],
+         validate: function(value, callback) {
+            mongoose.model("Category").findOne({ url: value }).then((data) => {
+               if (data instanceof Object) {
+                  return callback(false, "Title already exists");
+               }
+               callback();
+            }).catch(callback);
+         }
       },
       subcategories: [{
          type: mongoose.Schema.ObjectId,

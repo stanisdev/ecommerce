@@ -3,11 +3,27 @@
 const _ = require('lodash');
 const randomString = require("randomstring");
 const path = require('path');
+const multer = require('multer');
+const imageSizeOf = require('image-size');
+const sharp = require('sharp');
+const fs = require('fs');
 
 let dirs = __dirname.split("/");
 dirs.pop();
 const servicesDir = dirs.join("/") + "/services";
 const BaseRouter = require(servicesDir + "/baseRouter");
+dirs.pop();
+const rootDir = dirs.join("/");
+const imagesCategory = `${rootDir}/public/images/categories`;
+const upload = multer({
+   dest: imagesCategory,
+   fileFilter: function(req, file, cb) {
+      if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
+         return cb(new Error('Only image files are allowed!'), false);
+      }
+      cb(null, true);
+   }
+});
 
 /**
  * Admin class
@@ -40,7 +56,8 @@ class Administrator extends BaseRouter {
          { name: "categories", url: "categories", filters: [auth] },
          { name: "categoryNew", url: "categories/new", filters: [auth] },
          { name: "categoryNewPost", url: "categories/new", filters: [auth] },
-         { name: "categoryRemove", url: "category/:id/remove", filters: [auth] }
+         { name: "categoryRemove", url: "category/:id/remove", filters: [auth] },
+         { name: "uploadPicturePost", url: "upload-picture", filters: [auth, upload.single("image")] }
       ];
    }
 
@@ -142,8 +159,16 @@ class Administrator extends BaseRouter {
    async categoryNewPost() {
       const category = new (this.model("Category"))(this.body);
       try {
-         await category.save();
-         this.redirect("/categories", {flash: {type: "success", message: "Category added"}});
+         await category.validate();
+         const oldFile = imagesCategory + "/" + this.body.image;
+         const newFile = imagesCategory + "/" + category.url + "." + this.body["image-extension"];
+         fs.rename(oldFile, newFile, async (err) => {
+             if (err) {
+                return this.res.send("Category image was not uploaded");
+             }
+             await category.save();
+             this.redirect("/categories", {flash: {type: "success", message: "Category added"}});
+         });
       } catch (output) {
          this.render('category-form', {
             errors: this.services.other.validationErrorsPrepare(output),
@@ -166,6 +191,52 @@ class Administrator extends BaseRouter {
       }
       await this.model("Category").remove({ _id: category.id }).exec();
       return this.redirect("/categories", {flash: {type: "success", message: "Category was removed"}});
+   }
+
+   /**
+    * Remove category
+    */
+   uploadPicturePost() {
+      const file = this.req.file;
+      const extension = path.parse(file.originalname).ext.substr(1);
+      imageSizeOf(file.path, (err, dimensions) => {
+         if (err) {
+            return this.res.json({
+               success: false,
+               message: "Dimensions of image cannot be detected"
+            });
+         }
+         if (dimensions.width < 125) {
+            return this.res.json({
+               success: false,
+               message: "Image width must be more then or equal 125px"
+            });
+         }
+         const end = () => {
+            this.res.json({
+               success: true,
+               filename: file.filename,
+               extension: extension
+            });
+         };
+         if (dimensions.width == 125) {
+            return end();
+         }
+         // Crop image
+         const path = imagesCategory + "/" + file.filename;
+         sharp(file.path).resize(125).toFile(path + "125", function(err) {
+            if (err) {
+               return this.res.json({
+                  success: false,
+                  message: "Image cannot be resized"
+               });
+            }
+            fs.unlink(path, function() {
+               file.filename += "125";
+               end();
+            });
+         });
+      });
    }
 }
 
